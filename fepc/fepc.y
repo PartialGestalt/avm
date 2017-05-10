@@ -21,3 +21,10 @@ main()
 %}
 
 %token DEF STOR COMMA QUOTE WORD NUM
+
+
+%start MNEMONIC
+
+%%
+MNEMONIC: TOKEN
+%%
