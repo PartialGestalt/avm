@@ -1,0 +1,76 @@
+# FEP machine instructions/mnemonic mapping 
+
+##
+## A fepVM program is a fixed sequence of identifiers of arbitrary size.
+## FEP is big-endian.
+##
+## 
+##
+
+##
+## Identifiers.
+##
+## All entities in the fepVM are identified by a 32-bit value, where the
+## highest-order byte defines the type of entity.  The lower 24-bits are
+## defined according to type.
+##
+
+##
+## Entity types
+##
+0x00 Instruction -- Command or operation
+0x01 Error       -- Errors/exceptions
+0x02 Group       -- Group of entities
+0x03 Register    -- Simple fixed-width container
+0x04 Buffer      -- Bytewise memory buffer of arbitrary size.
+0x05 Port        -- I/O port.
+0x06 String      -- Character array
+0x08 Label       -- Program label
+
+
+##
+## Instructions.
+##
+## Although 8-bit values are represented here, the 
+## instruction is a full 32-bit value.
+##
+#-----------------------------------------------
+#            GROUP 1: Core instructions 
+#-----------------------------------------------
+# code   mnemonic   #args  description
+#-----------------------------------------------
+0x00     NOP        0      No-op.  Does nothing.
+0x01     DEF        2      Defines a new entity in the system.
+                           (Args: type, type-specific value)
+0x02     STOR       2      Places a value in a location.  Specific operation
+                           is type-dependent. 
+                           (Args: <what>,<loc>)
+                           If <loc> is of type:
+                             Group -- add <what> as a member of group
+                             Register -- replace register contents with <what>
+                             Buffer -- append contents or value of <what> to buffer
+                             Port -- emit contents of <what> to port
+                             String -- append contents or value of <what> to string
+0x03     INS        3      Insert a value at a given offset in a location. Not valid
+                           for all <loc> types.
+                           (Args: <what>,<offset>,<loc>)
+0x04     GOTO       1      Unconditional jump to the given label.
+0x05     JZ         2      Jump to label in 2nd arg if first arg is zero.
+                           (Args: <test>,<label>)
+0x06     JNZ        2
+#-----------------------------------------------
+#            GROUP 2: Math and boolean
+#-----------------------------------------------
+# code   mnemonic   #args  description
+#-----------------------------------------------
+0x10     ADD        3      Adds the numeric values of the first two args, and places
+                           the result in the location described by the third.
+                           (Args: <val1>,<val2>,<loc>);
+0x11     SUB        3      Subtracts the second arg from the first, and places the 
+                           result in the third.
+0x12     MUL
+0x13     DIV
+0x14     POW
+0x15     OR 
+0x16     AND
+0x17     CMP        3      Compare the first two args and place the result in the third.
