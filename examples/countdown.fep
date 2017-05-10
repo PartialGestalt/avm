@@ -6,7 +6,7 @@
 ; Create a string 
 	DEF STRING, current    
 ; Init counter from immediate
-	STOR $R0, =10  ;
+	STOR $R0, 10  ;
 
 ; Set a loop label
 	LABEL print_it  ; Define a label that we can come back to.

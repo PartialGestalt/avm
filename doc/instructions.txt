@@ -27,14 +27,16 @@
 0x06 String      -- Character array
 0x07 Label       -- Program label
 0x08 Process     -- Thread ID
-0xF0 Num Constant -- For numbers that fit in 24 bits, an immediate value
+0xFx NumConstant -- For numbers that fit in 24 bits, an immediate value
 
 
 ##
 ## Instructions.
 ##
 ## Although 8-bit values are represented here, the 
-## instruction is a full 32-bit value.
+## instruction is a full 32-bit value.  Note that
+## the compiler supports commands that are not
+## instruction mnemonics.
 ##
 #-----------------------------------------------
 #            GROUP 1: Core instructions 
@@ -65,9 +67,11 @@
                            share all other elements.  The arg is a location to
                            store the PID of the newly-created thread.  The new
                            thread will see a zero in this location instead.
-0x08     KILL       1      Stop a thread.  
+0x08     KILL       1      Stop a thread.   (Delivers a KILL exception)
 0x09     PUSH       1      Push a value onto the stack
 0x0A     POP        1      Pop a value off the stack
+0x0B     WIDTH      2      Assign a bitwidth to a register.
+                           (Args: <register>, <bitwidth>)
 #-----------------------------------------------
 #            GROUP 2: Math and boolean
 #-----------------------------------------------
