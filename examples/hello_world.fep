@@ -1,0 +1,13 @@
+; hello_world.fep -- The ever-present first program, several ways.
+
+; First, using immediate string and predefined port.
+	STOR @out "Hello, World!"   ;
+
+; Second, define a string entity and emit that.
+	DEF STRING,hello            ; Defines a String variable named 'hello'
+	STOR hello,"Hello, World!"  ; Store the value into the variable
+	STOR @out,hello
+
+; Third, use the I/O command with length (string defined already)
+	SIZE hello, $R0
+	OUT @out,$R0,hello

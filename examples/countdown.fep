@@ -1,0 +1,27 @@
+; countdown.fep -- Count down, emitting current value as we go.
+;
+; Note that we have to rebuild the string each time.
+;
+
+; Create a string 
+	DEF STRING, current    
+; Init counter from immediate
+	STOR $R0, =10  ;
+
+; Set a loop label
+	LABEL print_it  ; Define a label that we can come back to.
+
+; Get the count as a string value and emit 
+	STOR current,$R0
+	STOR @out, current
+
+; Test
+	JZ $R0,exit   ; Are we at zero yet? (No label definition yet, but that's ok)
+
+	SUB $R0,1,$R0 ; Decrement by subtracting 1.
+	GOTO checkit  ; Loop back	
+
+; Mark the exit
+	LABEL exit  ;
+	STOR @out,"Exiting."
+

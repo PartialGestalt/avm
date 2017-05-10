@@ -1,0 +1,28 @@
+###
+# At the start of processing, the following entites are predefined:
+###
+
+##
+## Registers 
+##
+## Some basic registers are predifined.  The '$' is convention only, and 
+## doesn't contribute to processing or parsing.
+##
+$IP -- Instruction pointer.  Address of the currently-executing instruction
+$LR -- Link register.  Contains the address after the location of the 
+      most recent jump.
+$DOR -- Default operand register.  During program parsing, this register is
+       used for missing operands.  (Which operand?  That's mnemonic-specific).
+$PID -- Process ID register. Contains the process ID of the running thread.
+$ETR -- Exception Table register.  Pointer to exception table.
+$R0-$R15 -- General purpose.
+
+##
+## Ports
+##
+## Some basic ports are predifined.  The '@' is convention only, and 
+## doesn't contribute to processing or parsing.
+##
+@out -- stdout
+@err -- stderr
+@in  -- stdin

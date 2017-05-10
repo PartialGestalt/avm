@@ -1,4 +1,4 @@
-# FEP machine instructions/mnemonic mapping 
+# FEP machine entities
 
 ##
 ## A fepVM program is a fixed sequence of identifiers of arbitrary size.
@@ -25,7 +25,9 @@
 0x04 Buffer      -- Bytewise memory buffer of arbitrary size.
 0x05 Port        -- I/O port.
 0x06 String      -- Character array
-0x08 Label       -- Program label
+0x07 Label       -- Program label
+0x08 Process     -- Thread ID
+0xF0 Num Constant -- For numbers that fit in 24 bits, an immediate value
 
 
 ##
@@ -43,21 +45,29 @@
 0x01     DEF        2      Defines a new entity in the system.
                            (Args: type, type-specific value)
 0x02     STOR       2      Places a value in a location.  Specific operation
-                           is type-dependent. 
-                           (Args: <what>,<loc>)
+                           is type-dependent.  Always stores by value.
+                           (Args: <loc>,<what>)
                            If <loc> is of type:
                              Group -- add <what> as a member of group
                              Register -- replace register contents with <what>
-                             Buffer -- append contents or value of <what> to buffer
+                             Buffer -- Replace buffer contents with value of <what>
                              Port -- emit contents of <what> to port
-                             String -- append contents or value of <what> to string
+                             String -- Replace string contents with value of <what>
 0x03     INS        3      Insert a value at a given offset in a location. Not valid
                            for all <loc> types.
                            (Args: <what>,<offset>,<loc>)
 0x04     GOTO       1      Unconditional jump to the given label.
-0x05     JZ         2      Jump to label in 2nd arg if first arg is zero.
-                           (Args: <test>,<label>)
+0x05     JZ         2      Jump to label in 2nd arg if 1st arg is zero.
+                           (Args: <label>,<test>)
 0x06     JNZ        2
+0x07     FORK       1      Creates a new processing thread.  Each thread has 
+                           its own stack and set of registers, but all threads
+                           share all other elements.  The arg is a location to
+                           store the PID of the newly-created thread.  The new
+                           thread will see a zero in this location instead.
+0x08     KILL       1      Stop a thread.  
+0x09     PUSH       1      Push a value onto the stack
+0x0A     POP        1      Pop a value off the stack
 #-----------------------------------------------
 #            GROUP 2: Math and boolean
 #-----------------------------------------------
@@ -74,3 +84,16 @@
 0x15     OR 
 0x16     AND
 0x17     CMP        3      Compare the first two args and place the result in the third.
+#-----------------------------------------------
+#            GROUP 3: Buffer and Port
+#-----------------------------------------------
+# code   mnemonic   #args  description
+#-----------------------------------------------
+0x20     FILE       2      Open a file as a buffer or port
+                           (Args: <target>,<filename>)
+0x21     IN         3      Consume the next set of bytes from a buffer or port
+                           (Args: <where>,<#bytes>, <into>)
+0x22     OUT        3      Append/emit a set of bytes to a buffer or port
+                           (Args: <where>,<#bytes>, <from>)
+0x23     SIZE       2      Get the size of 1st arg and place in 2nd
+                           (Args: <what>, <where>)
