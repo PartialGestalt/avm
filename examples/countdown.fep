@@ -6,7 +6,7 @@
 ; Create a string 
 	DEF STRING, current    
 ; Init counter from immediate
-	STOR $R0, 10  ;
+	STOR $R0, 0x10  ;
 
 ; Set a loop label
 	LABEL print_it  ; Define a label that we can come back to.
@@ -23,5 +23,4 @@
 
 ; Mark the exit
 	LABEL exit  ;
-	STOR @out,"Exiting."
-
+	STOR @out,"Exiting.",$R0,"Bye"; STOR can take multiple args.

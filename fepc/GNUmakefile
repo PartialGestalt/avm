@@ -4,7 +4,8 @@ FLEX_SOURCES=fepc_flex.c fepc_bison.c
 FLEX_INCLUDES=fepc_bison.h
 FLEX_OTHERS=fepc.output
 
-C_SOURCES=fepc_main.c
+C_SOURCES=fepc_main.c fepc_instructions.c
+CFLAGS+= -g
 
 SOURCES=$(C_SOURCES) $(FLEX_SOURCES)
 OBJS=$(SOURCES:%.c=%.o)
@@ -35,4 +36,4 @@ $(PROG): $(OBJS)
 
 
 test: all
-	./fepc ../examples/hello_world.fep
+	./fepc ../examples/*.fep
