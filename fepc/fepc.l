@@ -1,13 +1,17 @@
 %{
 #include <stdio.h>
-#include "y.tab.h"
+#include "fepc_bison.h"
 %}
+
+%option yylineno
 
 %%
 ;.*     {} /* Eat semicolon to end of line */
 DEF	    return DEF;
 def     return DEF;
 STOR    return STOR;
+SIZE    return SIZE;
+JZ    return JZ;
 ,       return COMMA;
 \".*\"	return STRING;
 [$@a-zA-Z][a-zA-Z0-9_-]* return WORD;

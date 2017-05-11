@@ -2,29 +2,56 @@
 #include <stdio.h>
 #include <string.h>
 
- 
 void yyerror(const char *str)
 {
-        fprintf(stderr,"error: %s\n",str);
+	extern int yylineno;
+        fprintf(stderr,"error, yo (line %d): %s\n",yylineno, str);
 }
  
 int yywrap()
 {
         return 1;
 } 
+extern int yylex();
+extern int yyparse();
   
-main()
+int main(int argc, char **argv)
 {
         yyparse();
 } 
 
 %}
 
-%token DEF STOR COMMA QUOTE WORD NUM
+%define parse.error verbose
+%define api.pure
+%locations
+%token DEF STOR COMMA WORD NUM STRING JZ SIZE
 
+%start INPUT
 
-%start MNEMONIC
+%union {
+    int itype;
+    char *stype;
+}
+
+%type <stype> LINE
 
 %%
-MNEMONIC: TOKEN
+INPUT: /* empty */
+	| INPUT LINE;
+
+LINE: '\n' { printf("EMPTY");}
+     | MNEMONIC ARGS { printf ("NONEMPTY");};
+
+MNEMONIC: SIZE | STOR | DEF | JZ ;
+
+ARGS: ARG
+	| ARG ARGSEP ARG
+	| ARG ARGSEP ARG ARGSEP ARG;
+
+ARGSEP: /* empty */
+	| COMMA;
+
+ARG: WORD
+	| STRING;
 %%
