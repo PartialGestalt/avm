@@ -1,6 +1,11 @@
 firstrule:all
 
-FLEX_SOURCES=fepc_flex.c fepc_bison.c fepc_bison.h
+FLEX_SOURCES=fepc_flex.c fepc_bison.c 
+FLEX_INCLUDES=fepc_bison.h
+FLEX_OTHERS=fepc.output
+
+C_SOURCES=fepc_main.c
+
 SOURCES=$(C_SOURCES) $(FLEX_SOURCES)
 OBJS=$(SOURCES:%.c=%.o)
 PROG=fepc
@@ -12,7 +17,7 @@ LIBS=-ll
 fresh:: clean all 
 
 clean::
-	rm -rf $(OBJS) $(PROG) $(FLEX_SOURCES)
+	rm -rf $(OBJS) $(PROG) $(FLEX_SOURCES) $(FLEX_INCLUDES) $(FLEX_OTHERS)
 
 all: $(PROG)
 
@@ -27,3 +32,7 @@ $(OBJS): $(SOURCES)
 
 $(PROG): $(OBJS)
 	cc -o $(PROG) $(OBJS) $(LIBS)
+
+
+test: all
+	./fepc ../examples/hello_world.fep

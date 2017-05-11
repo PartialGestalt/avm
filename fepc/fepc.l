@@ -6,15 +6,19 @@
 %option yylineno
 
 %%
-;.*     {} /* Eat semicolon to end of line */
-DEF	    return DEF;
-def     return DEF;
-STOR    return STOR;
-SIZE    return SIZE;
-JZ    return JZ;
+
+;.*     return SEMICOLON; /* Structural bits */
 ,       return COMMA;
 \".*\"	return STRING;
-[$@a-zA-Z][a-zA-Z0-9_-]* return WORD;
+\n      return NEWLINE;
+
+DEF	    return DEF; /* Instruction MNEMONICS */
+STOR    return STOR;
+SIZE    return SIZE;
+JZ      return JZ;
+OUT     return OUT;
+
+[$@a-zA-Z][a-zA-Z0-9_-]* return WORD; /* Other tokens */
 [0-9]+	return NUM;
 0x[0-9a-fA-F]+ return NUM;
 %%
