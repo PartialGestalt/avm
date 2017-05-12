@@ -26,7 +26,8 @@ struct inst_s;
 typedef enum {
     PARAM_TYPE_STRING, /* Quoted string constant.  */
     PARAM_TYPE_NAME,   /* Register, String, or other reference */
-    PARAM_TYPE_NUMBER  /* Numeric constant */
+    PARAM_TYPE_NUMBER, /* Numeric constant */
+    PARAM_TYPE_CLASS   /* Name of a datatype class */
 } param_type_t;
 
 /* A full parameter instance */

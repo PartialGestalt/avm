@@ -36,7 +36,7 @@ int parser_result(char *result_string)
 %define parse.error verbose
 %define api.pure
 %locations
-%token INSTRUCTION ALIAS /* mnemonics */
+%token INSTRUCTION ALIAS CLASS DEF /* mnemonics */
 %token NEWLINE SEMICOLON COMMA WORD NUM STRING /* others */
 
 %start INPUT
@@ -53,15 +53,25 @@ INPUT:
     ;
 
 LINE:  
-    NEWLINE  { /* ignore blank lines */ }
-    | SEMICOLON NEWLINE {/* ignore comment-only lines */ }
-    | MNEMONIC ARGS NEWLINE { if (parser_result(fepc_inst_finish())) YYERROR;}
-    | MNEMONIC ARGS SEMICOLON NEWLINE {if (parser_result(fepc_inst_finish())) YYERROR;}
+    LINETERM  { /* ignore blank lines */ }
+    | MNEMONIC ARGS LINETERM { if (parser_result(fepc_inst_finish())) YYERROR;}
+    | DEFINE CLASSARG ARGS LINETERM { if (parser_result(fepc_inst_finish())) YYERROR;}
+    | DEFINE CLASSARG COMMA ARGS LINETERM { if (parser_result(fepc_inst_finish())) YYERROR;}
     ;
+
+CLASSARG:
+    CLASS {if (parser_result(fepc_inst_param(PARAM_TYPE_CLASS,yytext))) YYERROR; }
+
+LINETERM:
+    NEWLINE
+    | SEMICOLON NEWLINE
 
 MNEMONIC: 
       INSTRUCTION {if (parser_result(fepc_inst_start(yytext,fepc_input_file,yylineno))) YYERROR;}
     ;
+
+DEFINE:
+    DEF {if (parser_result(fepc_inst_start(yytext,fepc_input_file,yylineno))) YYERROR;}
 
 ARGSEP: /* empty */
     | COMMA

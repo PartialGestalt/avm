@@ -127,7 +127,10 @@ fepc_inst_start(
 char *
 fepc_inst_finish(void)
 {
-    printf("...finished.\n");
+    if (!cur_op) {
+        /* This should never ever happen. */
+        return "ERROR: No instruction processing in progress.";
+    }
     return NULL;
 }
 

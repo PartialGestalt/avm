@@ -16,7 +16,7 @@
 ##
 
 ##
-## Entity types
+## Entity types (classes)
 ##
 0x00 Instruction -- Command or operation
 0x01 Error       -- Errors/exceptions
@@ -44,7 +44,7 @@
 # code   mnemonic   #args  description
 #-----------------------------------------------
 0x00     NOP        0      No-op.  Does nothing.
-0x01     DEF        2      Defines a new entity in the system.
+ n/a     DEF        2      Defines a new entity in the system.
                            (Args: type, type-specific value)
 0x02     STOR       2      Places a value in a location.  Specific operation
                            is type-dependent.  Always stores by value.
@@ -70,8 +70,9 @@
 0x08     KILL       1      Stop a thread.   (Delivers a KILL exception)
 0x09     PUSH       1      Push a value onto the stack
 0x0A     POP        1      Pop a value off the stack
-0x0B     WIDTH      2      Assign a bitwidth to a register.
-                           (Args: <register>, <bitwidth>)
+0x0B     WIDTH      2      Assign a bitwidth to a register or a bytewidth to a buffer
+                           or string
+                           (Args: <target>, <width>)
 #-----------------------------------------------
 #            GROUP 2: Math and boolean
 #-----------------------------------------------
@@ -88,6 +89,8 @@
 0x15     OR 
 0x16     AND
 0x17     CMP        3      Compare the first two args and place the result in the third.
+0x18     INC        1      Increment the value in a register 
+0x19     DEC        1      Increment the value in a register 
 #-----------------------------------------------
 #            GROUP 3: Buffer and Port
 #-----------------------------------------------

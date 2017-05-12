@@ -31,9 +31,39 @@
  */
 opdef_t fepc_op_canon[] = {
     /* TOKEN, OPCODE, ARGC, factory, validator */
-    {"NOP",FEP_OP_NOP,0,NULL,NULL}, 
+        /* Internal compiler bits */
     {"DEF",FEP_OP_INVALID,2,NULL,NULL},
+    {"WIDTH",FEP_OP_INVALID,2,NULL,NULL},
+        /* Structural ops */
+    {"NOP",FEP_OP_NOP,0,NULL,NULL}, 
     {"STOR",FEP_OP_STOR,2,NULL,NULL},
+    {"INS",FEP_OP_INS,3,NULL,NULL},
+    {"GOTO",FEP_OP_GOTO,1,NULL,NULL},
+    {"JZ",FEP_OP_JZ,2,NULL,NULL},
+    {"JNZ",FEP_OP_JNZ,2,NULL,NULL},
+    {"FORK",FEP_OP_FORK,1,NULL,NULL},
+    {"KILL",FEP_OP_KILL,1,NULL,NULL},
+    {"PUSH",FEP_OP_PUSH,1,NULL,NULL},
+    {"POP",FEP_OP_POP,1,NULL,NULL},
+    {"LABEL",FEP_OP_LABEL,1,NULL,NULL},
+
+        /* Arithmetic ops */
+    {"ADD",FEP_OP_ADD,3,NULL,NULL},
+    {"SUB",FEP_OP_SUB,3,NULL,NULL},
+    {"MUL",FEP_OP_MUL,3,NULL,NULL},
+    {"DIV",FEP_OP_DIV,3,NULL,NULL},
+    {"POW",FEP_OP_POW,3,NULL,NULL},
+    {"OR",FEP_OP_OR,3,NULL,NULL},
+    {"AND",FEP_OP_AND,3,NULL,NULL},
+    {"CMP",FEP_OP_CMP,3,NULL,NULL},
+    {"INC",FEP_OP_INC,1,NULL,NULL},
+    {"DEC",FEP_OP_DEC,1,NULL,NULL},
+
+        /* I/O ops */
+    {"FILE",FEP_OP_FILE,2,NULL,NULL},
+    {"IN",FEP_OP_IN,3,NULL,NULL},
+    {"OUT",FEP_OP_OUT,3,NULL,NULL},
+    {"SIZE",FEP_OP_SIZE,3,NULL,NULL},
     {NULL} /* Mark end */
 };
 
