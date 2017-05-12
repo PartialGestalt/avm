@@ -15,17 +15,18 @@
 #include <stdlib.h>
 
 #include "fepc.h"
-#include "fepc_instructions.h"
+#include "fepc_ops.h"
 #include "feplib_table.h"
 char *fepc_input_file = NULL;
 
 /* Globals */
-static inst_t *cur_op = NULL;
-static char cur_err[2048];
+static op_t *cur_op = NULL;
 
 /* Define our internal tables */
+TABLE_TYPE_DECLARE(param,param_t);
+TABLE_DECLARE(param,fepc_params);
 
-NEW_TABLE_TYPE(myint,uint32_t);
+extern table_t fepc_opdef_table;
 
 /**************************************************************************//**
  * @brief Main.
@@ -40,6 +41,13 @@ main(
     int i;
     parser_init(argc,argv);
 
+    /* Init global tables */
+    if (NULL == TABLE_INIT(param,&fepc_params,20)) {
+        fprintf(stderr, "Failed to init parameter table.\n");
+        return 3;
+    }
+    fepc_ops_init();
+
     /* For now, just parse all command line args as input files */
     for (i=1;(i<=(argc-1));i++) {
         fepc_input_file = strdup(argv[i]);
@@ -53,31 +61,7 @@ main(
 }
 
 /**************************************************************************//**
- * @brief Find an instruction definition by op name
- *
- * @details Lookup from VM's op list and from our internal alias
- * list.
- *
- * @param
- *
- * @returns Result code indicating success or failure mode
- *
- * @remarks
- * */
-inst_definition_t *
-fepc_inst_lookup(
-    char *inst
-) 
-{
-    inst_definition_t *def = fepc_instructions;
-    while (def && def->i_token) {
-        if (!strcmp(def->i_token,inst)) return def;
-        def++; /* Move to next */
-    }
-}
-
-/**************************************************************************//**
- * @brief Start decoding/assembling an instruction
+ * @brief Start decoding/assembling an instruction line
  *
  * @details This method is called when the parser identifies the begginning
  * of a new instruction or alias.
@@ -98,22 +82,17 @@ fepc_inst_start(
     int lineno
 )
 {
-    inst_definition_t *i_def;
+    opdef_t *i_def;
     /* Step 1:  Lookup instruction */
-    if (NULL == (i_def = fepc_inst_lookup(instruction))) {
-        sprintf(cur_err,"ERROR: Instruction \"%s\" is not a supported opcode or alias.\n",instruction); 
-        return cur_err;
+    if (NULL == (i_def = fepc_op_lookup(instruction))) {
+        sprintf(fepc_errstr,"ERROR: Instruction \"%s\" is not a supported opcode or alias.\n",instruction); 
+        return fepc_errstr;
     }
 
     /* Step 2: Create new container */
-    if (i_def->i_create) {
-        cur_op = i_def->i_create(i_def);
-    } else {
-        cur_op = fepc_inst_new(i_def);
-    }
-    if (NULL == cur_op) {
-        sprintf(cur_err,"ERROR: Failed to generate instruction for \"%s\" op.\n", instruction);
-        return cur_err;
+    if (NULL == (cur_op = fepc_op_new(i_def))) {
+        sprintf(fepc_errstr,"ERROR: Failed to generate instruction for \"%s\" op.\n", instruction);
+        return fepc_errstr;
     }
 
     /* Step 3: Fill in loction bits */
@@ -121,6 +100,10 @@ fepc_inst_start(
     cur_op->i_source_line = lineno;
 
     /* Step 4: Tell user */
+        /* For macros or aliases, the actual token that will be rendered
+         * into the machine code may be different from the text in the
+         * file....
+         */
     if (strcmp(instruction,i_def->i_token)) {
         fprintf(stdout,"OP: %s (%s)\n",instruction, i_def->i_token);
     } else {

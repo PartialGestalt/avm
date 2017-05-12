@@ -20,6 +20,13 @@
 #include <stdlib.h>
 
 /**
+ * Generic reference type 
+ */
+typedef void * table_t;
+
+#define NULL_TABLE (table_t)(NULL)
+
+/**
  * Declare a new table type.
  *
  * @param __name Name token for this table type.  Short, no spaces.
@@ -29,7 +36,7 @@
  * defines _table_address_t type, * where the entry array 
  * is uint16_t entries[];
  */
-#define NEW_TABLE_TYPE(__name,__entry_type) \
+#define TABLE_TYPE_DECLARE(__name,__entry_type) \
 typedef struct _table_##__name##_s { \
     /* Properties */ \
     uint32_t size; /* How many entries in table */ \
@@ -41,22 +48,23 @@ typedef struct _table_##__name##_s { \
     __entry_type *entries; \
     /* Methods */ \
         /* Add an entry to the table */ \
-    int (*add)(struct _table_##__name##_s *self, __entry_type entry); \
+    int (*add)(table_t self, __entry_type entry); \
         /* Compare an entry to a given value */ \
-    int (*compare)(struct _table_##__name##_s *self, __entry_type left, intptr_t test);\
+    int (*compare)(table_t self, __entry_type left, intptr_t test);\
         /* Find an entry (index) from a given value */ \
-    int (*find)(struct _table_##__name##_s *self, intptr_t test); \
+    int (*find)(table_t self, intptr_t test); \
 } _table_##__name##_t; \
 \
 /* Default function for adding a new entry.  */ \
 /* On success, returns the entry's new index. */ \
 /* On failure, returns -1. */ \
-int \
+static int \
 _table_##__name##_default_add( \
-    _table_##__name##_t *tbl, \
+    table_t self, \
     __entry_type entry \
 ) \
 { \
+    _table_##__name##_t *tbl = (_table_##__name##_t *)self; \
     /* Realloc if needed */ \
     if (tbl->size >= tbl->capacity) { \
         __entry_type *newdata = realloc(tbl->entries,sizeof(__entry_type) * (tbl->size + tbl->alloc_count)); \
@@ -71,26 +79,29 @@ _table_##__name##_default_add( \
 \
 /* Default function for comparing. */ \
 /* Returns 0 if a match, nonzero otherwise. */\
-int \
+static int \
 _table_##__name##_default_compare( \
-    _table_##__name##_t *tbl, \
+    table_t self, \
     __entry_type entry, \
     intptr_t test \
 ) \
 { \
-    /* Default is just to directly compare values. */\
-    if (entry == (__entry_type)test) return 0; \
+    /* This default is useless, and only exists to */\
+    /* prevent NULL function pointers.  For finding */\
+    /* or comparison, the caller MUST update this. */\
+    if ((void *)&(entry) == (void *)test) return 0; \
     return 1; \
 } \
 \
 /* Default function for finding an entry. */ \
 /* Returns index of match on success, -1 on failure. */\
-int \
+static int \
 _table_##__name##_default_find( \
-    _table_##__name##_t *tbl, \
+    table_t self, \
     intptr_t test \
 ) \
 { \
+    _table_##__name##_t *tbl = (_table_##__name##_t *)self; \
     /* Naively walk. */ \
     int i; \
     for (i=0;i<(tbl->size);i++) { \
@@ -104,7 +115,7 @@ _table_##__name##_default_find( \
 \
     /* Initialize a table struct.  Returns the initialized table */ \
     /* on success, or NULL on some kind of failure.              */ \
-_table_##__name##_t * \
+static _table_##__name##_t * \
 _table_##__name##_init( \
     _table_##__name##_t *tbl, \
     int capacity \
@@ -124,8 +135,61 @@ _table_##__name##_init( \
     (tbl)->find = _table_##__name##_default_find; \
          /* All setup.  Return success. */ \
     return (tbl); \
+}  \
+    /* Allocator for tables of this type. */ \
+static _table_##__name##_t * \
+_table_##__name##_create( \
+    int capacity \
+) \
+{ \
+    /* Simple alloc */ \
+    _table_##__name##_t *tbl = calloc(1,sizeof(_table_##__name##_t)); \
+    if (!tbl) return NULL; \
+    if (NULL == _table_##__name##_init(tbl,capacity)) { \
+        /* Failed? */ \
+        free(tbl);  \
+        return NULL; \
+    } \
+    return tbl; \
 } 
 
-#define LKJLSDKF 78
+
+/**
+ * Shorthand for core table struct.
+ */
+#define TABLE_TYPE(__typename) _table_##__typename##_t
+
+/**
+ * Simple declaration of a table (must be initialized before use)
+ */
+#define TABLE_DECLARE(__typename,__varname)  \
+    TABLE_TYPE(__typename) __varname 
+
+/**
+ * Initialize a previously-declared table
+ */
+#define TABLE_INIT(__typename, __varname, __capacity)  \
+    _table_##__typename##_init((__varname),(__capacity))
+
+/**
+ * Allocate and prepare a new table struct.  Must be in code, not
+ * declarations.
+ */
+#define TABLE_NEW(__typename, __capacity) \
+    _table_##__typename##_create(__capacity)
+
+
+/**
+ * Wrapper for table search.
+ */
+#define TABLE_FIND(__tbl,__test) \
+    (__tbl)->find((__tbl),(intptr_t)(__test))
+
+/**
+ * Wrapper for table add
+ */
+#define TABLE_ADD(__tbl,__entry) \
+    (__tbl)->add((__tbl),__entry)
+
 
 #endif /* _FEPLIB_TABLE_H_ */

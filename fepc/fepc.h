@@ -29,15 +29,6 @@ typedef enum {
     PARAM_TYPE_NUMBER  /* Numeric constant */
 } param_type_t;
 
-/* Basic canonical definition of an instruction */
-typedef struct inst_definition_s {
-    char *i_token; /* Canonical name */
-    uint32_t i_opcode; /* The 32-bit opcode */
-    uint32_t i_argc; /* Number of parameters this op takes. */
-    struct inst_s *(*i_create)(struct inst_definition_s*); /* Create new */
-    int (*i_validate)(struct inst_definition_s*, struct inst_s inst); /* Validate */
-} inst_definition_t;
-
 /* A full parameter instance */
 typedef struct  {
     char *p_text; /* Parameter text from source file */
@@ -45,16 +36,11 @@ typedef struct  {
     uint32_t p_opcode; /* Defined or allocated opcode for parameter. */
 } param_t;
 
-/* A full instruction instance during parsing/compilation. */
-typedef struct inst_s {
-    inst_definition_t *i_ref; /* Reference to basics */
-    char *i_source_file; /* Source file */
-    int i_source_line; /* Line # in source file */
-    param_t i_params[]; /* Size defined by instruction. */
-} inst_t;
-
 /* Globals */
 extern char *fepc_input_file;
+
+/* Common error string buffer -- use carefully */
+static char fepc_errstr[2048];
 
 /* Prototypes from parser */
 int parser_init(int argc, char **argv);

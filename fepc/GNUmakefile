@@ -4,7 +4,7 @@ FLEX_SOURCES=fepc_flex.c fepc_bison.c
 FLEX_INCLUDES=fepc_bison.h
 FLEX_OTHERS=fepc.output
 
-C_SOURCES=fepc_main.c fepc_instructions.c
+C_SOURCES=fepc_main.c fepc_ops.c
 CFLAGS+= -g -I../fepvm -I../feplib #--save-temps
 
 SOURCES=$(C_SOURCES) $(FLEX_SOURCES)
