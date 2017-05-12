@@ -5,20 +5,23 @@ FLEX_INCLUDES=fepc_bison.h
 FLEX_OTHERS=fepc.output
 
 C_SOURCES=fepc_main.c fepc_instructions.c
-CFLAGS+= -g
+CFLAGS+= -g -I../fepvm -I../feplib #--save-temps
 
 SOURCES=$(C_SOURCES) $(FLEX_SOURCES)
 OBJS=$(SOURCES:%.c=%.o)
 PROG=fepc
 
-LIBS=-ll
+LIBS=-L../feplib -lfep -ll
+
+ALL_INTERMEDIATES=$(wildcard *.s) $(wildcard *.i)
 
 
+CLEANFILES=$(OBJS) $(PROG) $(FLEX_SOURCES) $(FLEX_INCLUDES) $(FLEX_OTHERS) $(ALL_INTERMEDIATES)
 
 fresh:: clean all 
 
 clean::
-	rm -rf $(OBJS) $(PROG) $(FLEX_SOURCES) $(FLEX_INCLUDES) $(FLEX_OTHERS)
+	rm -rf $(CLEANFILES)
 
 all: $(PROG)
 

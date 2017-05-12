@@ -16,11 +16,16 @@
 
 #include "fepc.h"
 #include "fepc_instructions.h"
+#include "feplib_table.h"
 char *fepc_input_file = NULL;
 
 /* Globals */
 static inst_t *cur_op = NULL;
 static char cur_err[2048];
+
+/* Define our internal tables */
+
+NEW_TABLE_TYPE(myint,uint32_t);
 
 /**************************************************************************//**
  * @brief Main.
