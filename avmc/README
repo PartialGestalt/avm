@@ -1,0 +1,8 @@
+---------------------
+ AVM compiler (avmc)
+---------------------
+
+Compiles source files (*.avma) into standalone binary executables (*.avmx)
+
+
+

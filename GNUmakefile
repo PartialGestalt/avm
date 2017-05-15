@@ -1,7 +1,7 @@
 firstrule: all
 
 
-SUBDIRS=feplib fepc #fepvm
+SUBDIRS=avmlib avmc avmm
 
 cscope: cscope.out
 

@@ -3,7 +3,7 @@
 *.ko
 *.obj
 *.elf
-fepc
+avmc
 
 # Precompiled Headers
 *.gch

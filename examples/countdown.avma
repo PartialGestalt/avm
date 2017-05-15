@@ -1,4 +1,4 @@
-; countdown.fep -- Count down, emitting current value as we go.
+; countdown.avma -- Count down, emitting current value as we go.
 ;
 ; Note that we have to rebuild the string each time.
 ;

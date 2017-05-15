@@ -1,32 +1,32 @@
 /**************************************************************************//**
- * @file fepc_main.c 
+ * @file avmc_main.c 
  *
- * @brief Main body of FEP compiler.
+ * @brief Main body of AVM compiler.
  *
  * @details
  * <em>Copyright (C) 2017, Andrew Kephart. All rights reserved.</em>
  * */
-#ifndef _FEPC_MAIN_C_
-#define _FEPC_MAIN_C_
+#ifndef _AVMC_MAIN_C_
+#define _AVMC_MAIN_C_
 
 #include <stdio.h>
 #include <fcntl.h>
 #include <string.h>
 #include <stdlib.h>
 
-#include "fepc.h"
-#include "fepc_ops.h"
-#include "feplib_table.h"
-char *fepc_input_file = NULL;
+#include "avmc.h"
+#include "avmc_ops.h"
+#include "avmlib_table.h"
+char *avmc_input_file = NULL;
 
 /* Globals */
 static op_t *cur_op = NULL;
 
 /* Define our internal tables */
 TABLE_TYPE_DECLARE(param,param_t);
-TABLE_DECLARE(param,fepc_params);
+TABLE_DECLARE(param,avmc_params);
 
-extern table_t fepc_opdef_table;
+extern table_t avmc_opdef_table;
 
 /**************************************************************************//**
  * @brief Main.
@@ -42,21 +42,21 @@ main(
     parser_init(argc,argv);
 
     /* Init global tables */
-    if (NULL == TABLE_INIT(param,&fepc_params,20)) {
+    if (NULL == TABLE_INIT(param,&avmc_params,20)) {
         fprintf(stderr, "Failed to init parameter table.\n");
         return 3;
     }
-    fepc_ops_init();
+    avmc_ops_init();
 
     /* For now, just parse all command line args as input files */
     for (i=1;(i<=(argc-1));i++) {
-        fepc_input_file = strdup(argv[i]);
-        printf("PARSING: %s\n",fepc_input_file);
+        avmc_input_file = strdup(argv[i]);
+        printf("PARSING: %s\n",avmc_input_file);
         yylineno = 1; /* Reset line number */
         yyin = fopen(argv[i],"r");
         yyparse();
         if (yyin) fclose(yyin);
-        free(fepc_input_file);
+        free(avmc_input_file);
     }
 }
 
@@ -76,7 +76,7 @@ main(
  * statics and globals liberally.
  * */
 char *
-fepc_inst_start(
+avmc_inst_start(
     char *instruction,
     char *file,
     int lineno
@@ -84,15 +84,15 @@ fepc_inst_start(
 {
     opdef_t *i_def;
     /* Step 1:  Lookup instruction */
-    if (NULL == (i_def = fepc_op_lookup(instruction))) {
-        sprintf(fepc_errstr,"ERROR: Instruction \"%s\" is not a supported opcode or alias.\n",instruction); 
-        return fepc_errstr;
+    if (NULL == (i_def = avmc_op_lookup(instruction))) {
+        sprintf(avmc_errstr,"ERROR: Instruction \"%s\" is not a supported opcode or alias.\n",instruction); 
+        return avmc_errstr;
     }
 
     /* Step 2: Create new container */
-    if (NULL == (cur_op = fepc_op_new(i_def))) {
-        sprintf(fepc_errstr,"ERROR: Failed to generate instruction for \"%s\" op.\n", instruction);
-        return fepc_errstr;
+    if (NULL == (cur_op = avmc_op_new(i_def))) {
+        sprintf(avmc_errstr,"ERROR: Failed to generate instruction for \"%s\" op.\n", instruction);
+        return avmc_errstr;
     }
 
     /* Step 3: Fill in loction bits */
@@ -125,7 +125,7 @@ fepc_inst_start(
  * @remarks
  * */
 char *
-fepc_inst_finish(void)
+avmc_inst_finish(void)
 {
     if (!cur_op) {
         /* This should never ever happen. */
@@ -135,7 +135,7 @@ fepc_inst_finish(void)
 }
 
 char *
-fepc_inst_param(
+avmc_inst_param(
     param_type_t p_type,
     char *p_text
 )
@@ -143,4 +143,4 @@ fepc_inst_param(
     printf("   param: %s\n",p_text);
     return NULL;
 }
-#endif /* _FEPC_MAIN_C */
+#endif /* _AVMC_MAIN_C */

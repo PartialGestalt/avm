@@ -1,13 +1,13 @@
 /**************************************************************************//**
- * @file fepc.h
+ * @file avmc.h
  *
- * @brief Header file for FEP compiler
+ * @brief Header file for AVM compiler
  *
  * @details
  * <em>Copyright (C) 2017, Andrew Kephart.  All rights reserved.</em>
  * */
-#ifndef _FEPC_H_
-#define _FEPC_H_
+#ifndef _AVMC_H_
+#define _AVMC_H_
 
 #include <stdio.h>
 #include <inttypes.h>
@@ -38,18 +38,18 @@ typedef struct  {
 } param_t;
 
 /* Globals */
-extern char *fepc_input_file;
+extern char *avmc_input_file;
 
 /* Common error string buffer -- use carefully */
-static char fepc_errstr[2048];
+static char avmc_errstr[2048];
 
 /* Prototypes from parser */
 int parser_init(int argc, char **argv);
 
 /* Protoypes exposed to parser */
-char *fepc_inst_start(char *instruction, char *file, int lineno);
-char *fepc_inst_param(param_type_t p_type, char *p_text);
-char *fepc_inst_finish(void);
+char *avmc_inst_start(char *instruction, char *file, int lineno);
+char *avmc_inst_param(param_type_t p_type, char *p_text);
+char *avmc_inst_finish(void);
 
 
-#endif /* _FEPC_H_ */
+#endif /* _AVMC_H_ */

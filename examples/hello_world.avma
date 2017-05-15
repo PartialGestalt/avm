@@ -1,4 +1,4 @@
-; hello_world.fep -- The ever-present first program, several ways.
+; hello_world.avma -- The ever-present first program, several ways.
 
 ; First, using immediate string and predefined port.
 	STOR @out,"Hello, World!"   ;

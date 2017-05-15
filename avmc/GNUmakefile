@@ -1,17 +1,17 @@
 firstrule:all
 
-FLEX_SOURCES=fepc_flex.c fepc_bison.c 
-FLEX_INCLUDES=fepc_bison.h
-FLEX_OTHERS=fepc.output
+FLEX_SOURCES=avmc_flex.c avmc_bison.c 
+FLEX_INCLUDES=avmc_bison.h
+FLEX_OTHERS=avmc.output
 
-C_SOURCES=fepc_main.c fepc_ops.c
-CFLAGS+= -g -I../fepvm -I../feplib #--save-temps
+C_SOURCES=avmc_main.c avmc_ops.c
+CFLAGS+= -g -I../avmm -I../avmlib #--save-temps
 
 SOURCES=$(C_SOURCES) $(FLEX_SOURCES)
 OBJS=$(SOURCES:%.c=%.o)
-PROG=fepc
+PROG=avmc
 
-LIBS=-L../feplib -lfep -ll
+LIBS=-L../avmlib -lavm -ll
 
 ALL_INTERMEDIATES=$(wildcard *.s) $(wildcard *.i)
 
@@ -39,4 +39,4 @@ $(PROG): $(OBJS)
 
 
 test: all
-	./fepc ../examples/*.fep
+	./avmc ../examples/*.avma

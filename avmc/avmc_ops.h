@@ -1,17 +1,17 @@
 /**************************************************************************//**
- * @file fepc_ops.h
+ * @file avmc_ops.h
  *
  * @brief List of supported ops
  *
  * @details
- * <em>Copyright (C) 2012, Alereon, Inc.  All rights reserved.</em>
+ * <em>Copyright (C) 2017, Andrew Kephart.  All rights reserved.</em>
  * */
-#ifndef _FEPC_OPS_H_
-#define _FEPC_OPS_H_
+#ifndef _AVMC_OPS_H_
+#define _AVMC_OPS_H_
 
-#include "fepc.h"
-#include "fepvm_data.h"
-#include "feplib_table.h"
+#include "avmc.h"
+#include "avmm_data.h"
+#include "avmlib_table.h"
 
 
 /* Basic canonical definition of an instruction */
@@ -36,12 +36,12 @@ typedef struct op_s {
 /**
  * Prototypes for op processing
  */
-void fepc_ops_init(void);
-op_t *fepc_op_new(opdef_t *def); /* Default */
-char *fepc_op_validate(opdef_t *def, op_t *op); /* Default */
-opdef_t *fepc_op_lookup(char *token);
+void avmc_ops_init(void);
+op_t *avmc_op_new(opdef_t *def); /* Default */
+char *avmc_op_validate(opdef_t *def, op_t *op); /* Default */
+opdef_t *avmc_op_lookup(char *token);
     /* Table support */
-int fepc_opdef_cmp(table_t self, opdef_t *def, intptr_t test);
+int avmc_opdef_cmp(table_t self, opdef_t *def, intptr_t test);
 
 
-#endif /* _FEPC_OPS_H_ */
+#endif /* _AVMC_OPS_H_ */

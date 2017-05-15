@@ -1,6 +1,6 @@
 %{
 #include <stdio.h>
-#include "fepc_bison.h"
+#include "avmc_bison.h"
 %}
 
 %option yylineno

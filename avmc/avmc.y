@@ -1,11 +1,11 @@
 %{
 #include <stdio.h>
 #include <string.h>
-#include "fepc.h"
+#include "avmc.h"
 
 void yyerror(const char *str)
 {
-    fprintf(stderr,"ERR: (file: %s, line %d): %s\n",fepc_input_file, yylineno, str);
+    fprintf(stderr,"ERR: (file: %s, line %d): %s\n",avmc_input_file, yylineno, str);
 }
  
 int yywrap()
@@ -54,24 +54,24 @@ INPUT:
 
 LINE:  
     LINETERM  { /* ignore blank lines */ }
-    | MNEMONIC ARGS LINETERM { if (parser_result(fepc_inst_finish())) YYERROR;}
-    | DEFINE CLASSARG ARGS LINETERM { if (parser_result(fepc_inst_finish())) YYERROR;}
-    | DEFINE CLASSARG COMMA ARGS LINETERM { if (parser_result(fepc_inst_finish())) YYERROR;}
+    | MNEMONIC ARGS LINETERM { if (parser_result(avmc_inst_finish())) YYERROR;}
+    | DEFINE CLASSARG ARGS LINETERM { if (parser_result(avmc_inst_finish())) YYERROR;}
+    | DEFINE CLASSARG COMMA ARGS LINETERM { if (parser_result(avmc_inst_finish())) YYERROR;}
     ;
 
 CLASSARG:
-    CLASS {if (parser_result(fepc_inst_param(PARAM_TYPE_CLASS,yytext))) YYERROR; }
+    CLASS {if (parser_result(avmc_inst_param(PARAM_TYPE_CLASS,yytext))) YYERROR; }
 
 LINETERM:
     NEWLINE
     | SEMICOLON NEWLINE
 
 MNEMONIC: 
-      INSTRUCTION {if (parser_result(fepc_inst_start(yytext,fepc_input_file,yylineno))) YYERROR;}
+      INSTRUCTION {if (parser_result(avmc_inst_start(yytext,avmc_input_file,yylineno))) YYERROR;}
     ;
 
 DEFINE:
-    DEF {if (parser_result(fepc_inst_start(yytext,fepc_input_file,yylineno))) YYERROR;}
+    DEF {if (parser_result(avmc_inst_start(yytext,avmc_input_file,yylineno))) YYERROR;}
 
 ARGSEP: /* empty */
     | COMMA
@@ -83,8 +83,8 @@ ARGS:
     ;
 
 ARG: 
-    WORD {if (parser_result(fepc_inst_param(PARAM_TYPE_NAME,yytext))) YYERROR;}
-    | NUM {if (parser_result(fepc_inst_param(PARAM_TYPE_NUMBER, yytext))) YYERROR;}
-    | STRING {if (parser_result(fepc_inst_param(PARAM_TYPE_STRING, yytext))) YYERROR;}
+    WORD {if (parser_result(avmc_inst_param(PARAM_TYPE_NAME,yytext))) YYERROR;}
+    | NUM {if (parser_result(avmc_inst_param(PARAM_TYPE_NUMBER, yytext))) YYERROR;}
+    | STRING {if (parser_result(avmc_inst_param(PARAM_TYPE_STRING, yytext))) YYERROR;}
     ;
 %%

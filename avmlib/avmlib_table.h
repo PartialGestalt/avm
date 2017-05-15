@@ -1,20 +1,20 @@
 /**************************************************************************//**
- * @file feplib_table.h
+ * @file avmlib_table.h
  *
- * @brief Header definitions and declarations for the FEP table API.
+ * @brief Header definitions and declarations for the AVM table API.
  *
  * @details
  * <em>Copyright (C) 2017, Andrew Kephart.  All rights reserved.</em>
  *
- * A feplib table is a dynamic array of entries of a user-defined
+ * A avmlib table is a dynamic array of entries of a user-defined
  * type. 
  *    + Table data may be directly indexed.
  *    + Tables may be serialized to, or deserialized from, memory.
  *    + Table entries may be added, but not removed (the data an entry
  *      refers to may be cleared, of course).  
  * */
-#ifndef _FEPLIB_TABLE_H_
-#define _FEPLIB_TABLE_H_
+#ifndef _AVMLIB_TABLE_H_
+#define _AVMLIB_TABLE_H_
 
 #include <string.h>
 #include <stdlib.h>
@@ -192,4 +192,4 @@ _table_##__name##_create( \
     (__tbl)->add((__tbl),__entry)
 
 
-#endif /* _FEPLIB_TABLE_H_ */
+#endif /* _AVMLIB_TABLE_H_ */

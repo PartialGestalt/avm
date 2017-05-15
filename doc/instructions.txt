@@ -1,8 +1,8 @@
-# FEP machine entities
+# AVM machine entities
 
 ##
-## A fepVM program is a fixed sequence of identifiers of arbitrary size.
-## FEP is big-endian.
+## A avm program is a fixed sequence of identifiers of arbitrary size.
+## AVM is big-endian.
 ##
 ## 
 ##
@@ -10,7 +10,7 @@
 ##
 ## Identifiers.
 ##
-## All entities in the fepVM are identified by a 32-bit value, where the
+## All entities in the avm are identified by a 32-bit value, where the
 ## highest-order byte defines the type of entity.  The lower 24-bits are
 ## defined according to type.
 ##

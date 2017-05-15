@@ -1,16 +1,16 @@
 /**************************************************************************//**
- * @file fepc_ops.c
+ * @file avmc_ops.c
  *
  * @brief Special parsing or generation for instructions.
  *
  * @details
  * <em>Copyright (C) 2012, Alereon, Inc.  All rights reserved.</em>
  * */
-#ifndef _FEPC_OPS_C_
-#define _FEPC_OPS_C_
+#ifndef _AVMC_OPS_C_
+#define _AVMC_OPS_C_
 
 #include <stdlib.h>
-#include "fepc_ops.h"
+#include "avmc_ops.h"
 
 /**
  * NOTE: The actual coding of an opcode is a big-endian 32-bit value, 
@@ -29,41 +29,41 @@
  * Note that some of these are macros or aliases, and
  * so may not have an actual opcode.
  */
-opdef_t fepc_op_canon[] = {
+opdef_t avmc_op_canon[] = {
     /* TOKEN, OPCODE, ARGC, factory, validator */
         /* Internal compiler bits */
-    {"DEF",FEP_OP_INVALID,2,NULL,NULL},
-    {"WIDTH",FEP_OP_INVALID,2,NULL,NULL},
+    {"DEF",AVM_OP_INVALID,2,NULL,NULL},
+    {"WIDTH",AVM_OP_INVALID,2,NULL,NULL},
         /* Structural ops */
-    {"NOP",FEP_OP_NOP,0,NULL,NULL}, 
-    {"STOR",FEP_OP_STOR,2,NULL,NULL},
-    {"INS",FEP_OP_INS,3,NULL,NULL},
-    {"GOTO",FEP_OP_GOTO,1,NULL,NULL},
-    {"JZ",FEP_OP_JZ,2,NULL,NULL},
-    {"JNZ",FEP_OP_JNZ,2,NULL,NULL},
-    {"FORK",FEP_OP_FORK,1,NULL,NULL},
-    {"KILL",FEP_OP_KILL,1,NULL,NULL},
-    {"PUSH",FEP_OP_PUSH,1,NULL,NULL},
-    {"POP",FEP_OP_POP,1,NULL,NULL},
-    {"LABEL",FEP_OP_LABEL,1,NULL,NULL},
+    {"NOP",AVM_OP_NOP,0,NULL,NULL}, 
+    {"STOR",AVM_OP_STOR,2,NULL,NULL},
+    {"INS",AVM_OP_INS,3,NULL,NULL},
+    {"GOTO",AVM_OP_GOTO,1,NULL,NULL},
+    {"JZ",AVM_OP_JZ,2,NULL,NULL},
+    {"JNZ",AVM_OP_JNZ,2,NULL,NULL},
+    {"FORK",AVM_OP_FORK,1,NULL,NULL},
+    {"KILL",AVM_OP_KILL,1,NULL,NULL},
+    {"PUSH",AVM_OP_PUSH,1,NULL,NULL},
+    {"POP",AVM_OP_POP,1,NULL,NULL},
+    {"LABEL",AVM_OP_LABEL,1,NULL,NULL},
 
         /* Arithmetic ops */
-    {"ADD",FEP_OP_ADD,3,NULL,NULL},
-    {"SUB",FEP_OP_SUB,3,NULL,NULL},
-    {"MUL",FEP_OP_MUL,3,NULL,NULL},
-    {"DIV",FEP_OP_DIV,3,NULL,NULL},
-    {"POW",FEP_OP_POW,3,NULL,NULL},
-    {"OR",FEP_OP_OR,3,NULL,NULL},
-    {"AND",FEP_OP_AND,3,NULL,NULL},
-    {"CMP",FEP_OP_CMP,3,NULL,NULL},
-    {"INC",FEP_OP_INC,1,NULL,NULL},
-    {"DEC",FEP_OP_DEC,1,NULL,NULL},
+    {"ADD",AVM_OP_ADD,3,NULL,NULL},
+    {"SUB",AVM_OP_SUB,3,NULL,NULL},
+    {"MUL",AVM_OP_MUL,3,NULL,NULL},
+    {"DIV",AVM_OP_DIV,3,NULL,NULL},
+    {"POW",AVM_OP_POW,3,NULL,NULL},
+    {"OR",AVM_OP_OR,3,NULL,NULL},
+    {"AND",AVM_OP_AND,3,NULL,NULL},
+    {"CMP",AVM_OP_CMP,3,NULL,NULL},
+    {"INC",AVM_OP_INC,1,NULL,NULL},
+    {"DEC",AVM_OP_DEC,1,NULL,NULL},
 
         /* I/O ops */
-    {"FILE",FEP_OP_FILE,2,NULL,NULL},
-    {"IN",FEP_OP_IN,3,NULL,NULL},
-    {"OUT",FEP_OP_OUT,3,NULL,NULL},
-    {"SIZE",FEP_OP_SIZE,3,NULL,NULL},
+    {"FILE",AVM_OP_FILE,2,NULL,NULL},
+    {"IN",AVM_OP_IN,3,NULL,NULL},
+    {"OUT",AVM_OP_OUT,3,NULL,NULL},
+    {"SIZE",AVM_OP_SIZE,3,NULL,NULL},
     {NULL} /* Mark end */
 };
 
@@ -71,8 +71,8 @@ opdef_t fepc_op_canon[] = {
  * The big op table.
  */
 TABLE_TYPE_DECLARE(opdef_table,opdef_t *);
-static TABLE_TYPE(opdef_table) * _fepc_opdef_table; /* Internal ref */
-table_t fepc_opdef_table;                           /* External ref */
+static TABLE_TYPE(opdef_table) * _avmc_opdef_table; /* Internal ref */
+table_t avmc_opdef_table;                           /* External ref */
 
 /**************************************************************************//**
  * @brief Comparison function to instruction definition table
@@ -88,7 +88,7 @@ table_t fepc_opdef_table;                           /* External ref */
  *
  * @remarks
  * */
-int fepc_opdef_cmp(
+int avmc_opdef_cmp(
     table_t self,
     opdef_t *inst,
     intptr_t test
@@ -102,22 +102,22 @@ int fepc_opdef_cmp(
  *
  * */
 void
-fepc_ops_init(void)
+avmc_ops_init(void)
 {
     int i;
     /* General table init */
-    if (NULL_TABLE == (_fepc_opdef_table = TABLE_NEW(opdef_table,1))) {
+    if (NULL_TABLE == (_avmc_opdef_table = TABLE_NEW(opdef_table,1))) {
         fprintf(stderr, "Failed to init instruction definitions table.\n");
         exit(3);
     }
-    fepc_opdef_table = (table_t)_fepc_opdef_table;
+    avmc_opdef_table = (table_t)_avmc_opdef_table;
     
     /* Replace search comparison function */
-    _fepc_opdef_table->compare = fepc_opdef_cmp;
+    _avmc_opdef_table->compare = avmc_opdef_cmp;
 
     /* Add the canonical entries */
-    for (i=0;fepc_op_canon[i].i_token != NULL;i++) {
-        TABLE_ADD(_fepc_opdef_table,&fepc_op_canon[i]);
+    for (i=0;avmc_op_canon[i].i_token != NULL;i++) {
+        TABLE_ADD(_avmc_opdef_table,&avmc_op_canon[i]);
     }
 
 }
@@ -135,13 +135,13 @@ fepc_ops_init(void)
  * @remarks
  * */
 opdef_t *
-fepc_op_lookup(
+avmc_op_lookup(
     char *token
 ) 
 {
-    int idx = TABLE_FIND(_fepc_opdef_table,token);
+    int idx = TABLE_FIND(_avmc_opdef_table,token);
     if (idx < 0) return NULL;
-    return _fepc_opdef_table->entries[idx];
+    return _avmc_opdef_table->entries[idx];
 }
 
 /**************************************************************************//**
@@ -155,7 +155,7 @@ fepc_op_lookup(
  * @remarks
  * */
 char * 
-fepc_op_validate(
+avmc_op_validate(
     opdef_t *def,
     op_t *op
 ) {
@@ -169,9 +169,9 @@ fepc_op_validate(
     /* Step 2: Otherwise, do generic checks... */
     if (op->i_paramc < def->i_argc) {
         /* Too few parameters */
-        sprintf(fepc_errstr,"ERROR: OP %s expects %d parameters; only %d provided.\n",
+        sprintf(avmc_errstr,"ERROR: OP %s expects %d parameters; only %d provided.\n",
                 def->i_token,def->i_argc,op->i_paramc);
-        return (fepc_errstr);
+        return (avmc_errstr);
     }
 
     return NULL;
@@ -181,7 +181,7 @@ fepc_op_validate(
  * @brief Default instruction creator
  * */
 op_t *
-fepc_op_new(
+avmc_op_new(
     opdef_t *def
 )
 {
@@ -197,4 +197,4 @@ fepc_op_new(
     ni->i_ref = def;
 }
 
-#endif /* _FEPC_OPS_C_*/
+#endif /* _AVMC_OPS_C_*/
