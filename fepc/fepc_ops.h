@@ -29,7 +29,7 @@ typedef struct op_s {
     char *i_source_file; /* Source file */
     int i_source_line; /* Line # in source file */
     uint32_t i_paramc; /* Number of parameters */
-    param_t i_params[]; /* Size defined by instruction. */
+    param_t *i_params[64]; /* Most possible params */
 } op_t;
 
 
