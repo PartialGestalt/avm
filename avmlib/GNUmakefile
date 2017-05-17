@@ -2,11 +2,11 @@ firstrule: all
 
 
 LIB_TOKEN=avm
-LIB_TARGET=lib$(LIB_TOKEN).so
+LIB_TARGET=lib$(LIB_TOKEN).a
 LIB_SRCS=$(wildcard avmlib_*.c)
 LIB_OBJS=$(LIB_SRCS:.c=.o)
 
-LIB_CFLAGS=
+LIB_CFLAGS=-fPIC
 LIB_LDFLAGS=
 
 CFLAGS+=$(LIB_CFLAGS)
@@ -17,8 +17,7 @@ all: $(LIB_TARGET)
 
 
 $(LIB_TARGET): $(LIB_OBJS)
-	gcc -shared -o $@ $^ $(LIB_LDFLAGS)
-	
+	ar -rc $@ $^
 
 clean::
 	rm -rf $(CLEANFILES) 2>/dev/null
