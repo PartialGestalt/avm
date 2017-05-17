@@ -38,3 +38,7 @@ avmc
 *_bison.h
 *_flex.c
 *_flex.h
+
+# Cscope
+cscope.out
+cscope.files
