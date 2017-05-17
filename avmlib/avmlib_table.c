@@ -180,6 +180,32 @@ avmlib_table_new(
 }
 
 /**************************************************************************//**
+ * @brief Remove all entries from a table and reset.
+ *
+ * @details This function clears all entries from a table, but doesn't
+ * free/realloc the entry area itself.
+ *
+ * @param this The table to clear
+ *
+ * */
+void
+avmlib_table_clear(
+    table_t *this
+)
+{
+    int i;
+    /* Step 1: Individual entries */
+    if (this->destroy) {
+        for (i=0;i<this->size;i++) {
+            this->destroy(this,this->entries[i]);
+        }
+    }
+
+    /* Step 2: Reset some parameters */
+    this->size = 0;
+}
+
+/**************************************************************************//**
  * @brief Destroy a table and release resources.
  *
  * @details This method attempts to release any resources associated with
@@ -208,6 +234,7 @@ avmlib_table_destroy(
     }
 
     /* Step 2: Entries array and table itself */
+    this->capacity = this->size = 0;
     free(this->entries);
     free(this);
 }

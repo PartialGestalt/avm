@@ -11,6 +11,11 @@
 #define _AVMM_DATA_H_
 
 /**
+ * Core entity type
+ */
+typedef uint32_t entity_t;
+
+/**
  * Enumerate the supported entity types.  Each type's value defined
  * here is an index into the table of tables.  All opcodes (entities) of
  * each type will have the type as the high 8-bits of the
@@ -28,6 +33,8 @@ typedef enum {
     AVM_CLASS_PROCESS = 0x08, /* A thread ID */
     AVM_CLASS_NUMBER = 0x09, /* A numeric reference (basically an 'int' variable) */
     AVM_CLASS_IMMEDIATE = 0x0A, /* Lower 16 bits are an immediate value. */
+    AVM_CLASS_SEGMENT = 0x0B, /* A program segment */
+
 } avm_class_e; 
 
 
@@ -68,7 +75,116 @@ typedef enum {
 
 } avm_opcode_t;
 
-    
+/**
+ * Common struct for all entity stores
+ */
+typedef struct {
+    char symname[31]; /* Name of this entity */
+} class_header_t;
 
+    
+/**
+ * Storage for error entity
+ */
+typedef struct {
+    entity_t segment; /* Entity of segment containing handler */
+    entity_t label;   /* Label to jump to */
+} class_error_t;
+
+/**
+ * Storage for a group entity
+ */
+typedef struct {
+    table_t members; /* Table of member entities */
+} class_group_t;
+
+/**
+ * Storage for a register entity
+ *
+ * Registers represent u32 values, but handle them 
+ * differently from number entities.
+ */
+typedef struct _class_register_s {
+    /* If a register can be read, assign a getter */
+    uint32_t (*get)(struct _class_register_s reg);
+    /* If a register can be written, assign a setter */
+    uint32_t (*set)(struct _class_register_s reg, uint32_t value);
+} class_register_t;
+
+/**
+ * Storage for a buffer entity
+ *
+ */
+typedef struct {
+    void *buf; /* The actual buffer */
+    uint32_t capacity; /* Bytes available in buf */
+    uint32_t size; /* How many bytes actually stored */
+    uint32_t cursor; /* Position within buffer of cursor */
+} class_buffer_t;
+
+/**
+ * Storage for a port entity 
+ *
+ * CLEAN: TODO: Flesh this out more.
+ */
+typedef struct {
+    int file; /* File descriptor */
+} class_port_t;
+
+/**
+ * Storage for a string entity
+ */
+typedef struct {
+    char *text;
+    uint32_t capacity;
+} class_string_t;
+
+/**
+ * Storage for a label entity
+ */
+typedef struct {
+    char *name; /* Label name */
+    uint32_t offset; /* Word offset into this segment's code */
+} class_label_t;
+
+/**
+ * Storage for a process/thread/core entity
+ */
+typedef struct {
+    table_t registers; /* Table of per-core registers */
+    table_t stack;     /* Entity stack */
+} class_process_t;
+
+/**
+ * Storage for a numeric entity 
+ */
+typdef struct {
+    uint32_t bitwidth;
+    uint32_t lo_bits;
+    uint32_t hi_bits;
+} class_number_t;
+
+/**
+ * Storage for a program segment
+ */
+typdef struct {
+    table_t code; /* The program entity stream */
+    table_t groups; /* Groups defined in this segment */
+    table_t buffers; /* Buffers defined in this segment */
+    table_t ports; /* Ports defined in this segment */
+    table_t strings; /* Text strings defined in this segment */
+    table_t labels; /* Labels defined in this segment */
+    table_t numbers; /* Numeric variables */
+} class_segment_t;
+
+/**
+ * Storage for a virtual machine
+ */
+typedef struct {
+    table_t interrupts; /* Exception table */
+    table_t registers; /* Process-independent registers */
+    table_t processes; /* PID/Thread table */
+    table_t segments; /* Segments (Seg 0 is bootstrap) */
+} avm_t;
 
 #endif /* _AVMM_DATA_H_ */

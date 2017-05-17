@@ -3,7 +3,10 @@
  *
  * @brief Main body of AVM compiler.
  *
- * @details
+ * @details The AVM compiler takes a single input file and generates
+ * a program block (aka segment) that represents the programming
+ * in that file.  It then emits that segment as an AVM object file,
+ * which may be linked using the AVM linker into an AVM executable.
  * <em>Copyright (C) 2017, Andrew Kephart. All rights reserved.</em>
  * */
 #ifndef _AVMC_MAIN_C_
@@ -17,14 +20,30 @@
 #include "avmc.h"
 #include "avmc_ops.h"
 #include "avmlib_table.h"
-char *avmc_input_file = NULL;
+
+/* Prototypes */
+void avmc_seg_init(class_segment_t *seg);
+
+char *avmc_source_file = NULL; /* Input. */
+char *avmc_object_file = NULL; /* Output */
 
 /* Globals */
 static op_t *cur_op = NULL;
 
 /* Define our internal tables */
-table_t *param_table = NULL;
 extern table_t *avmc_opdef_table;
+
+/* Named parameters */
+typdef struct {
+    char *name;
+    uint32_t entity;
+} entity_map_t;
+
+static table_t entity_map; /* Referenced symbols from code */
+
+/* The segment we're constructing */
+static class_segment_t cur_seg;
+ 
 
 /**************************************************************************//**
  * @brief Main.
@@ -44,18 +63,25 @@ main(
         fprintf(stderr, "Failed to init parameter table.\n");
         return 3;
     }
+
+    /* Init our ops table */
     avmc_ops_init();
+
+    /* Init our object storage */
+    avmc_seg_init(&cur_seg);
 
     /* For now, just parse all command line args as input files */
     for (i=1;(i<=(argc-1));i++) {
-        avmc_input_file = strdup(argv[i]);
-        printf("PARSING: %s\n",avmc_input_file);
+        avmc_source_file = strdup(argv[i]);
+        printf("PARSING: %s\n",avmc_source_file);
         yylineno = 1; /* Reset line number */
         yyin = fopen(argv[i],"r");
         yyparse();
         if (yyin) fclose(yyin);
-        free(avmc_input_file);
+        free(avmc_source_file);
     }
+
+    /* Now, emit the segment as object code */
 }
 
 /**************************************************************************//**
@@ -141,4 +167,55 @@ avmc_inst_param(
     printf("   param: %s\n",p_text);
     return NULL;
 }
+
+/**************************************************************************//**
+ * @brief Lookups for in-process symbol table
+ *
+ * @details The in-process map table is searched by string name.
+ *
+ * @param this The map table
+ * @param entry An entity map from the table
+ * @param test String name to check
+ *
+ * @returns 0 if it's a match, nonzero otherwise
+ *
+ * @remarks
+ * */
+int
+avmc_entity_map_compare(
+    table_t *this,
+    entry_t entry,
+    intptr_t test
+)
+{
+    entity_map_t *map = (entity_map_t *)entry;
+    char *name = (char *)test;
+
+    if (!strcmp(name,map->name)) return 0;
+    return -1;
+}
+
+/**************************************************************************//**
+ * @brief Initialize an object segment
+ *
+ * */
+void
+avmc_seg_init(
+    class_segment_t *seg
+)
+{
+    /* Internal entity map */
+    avmlib_table_init(&entity_map,64);
+    entity_map.compare = avmc_entity_map_compare;
+
+    /* Code Stream */
+    avmlib_table_init(&seg->code,256);
+    seg->code.alloc_count = 32; /* Expect quite a bit */
+
+    avmlib_table_init(&seg->groups,10);
+    avmlib_table_init(&seg->buffers,10);
+    avmlib_table_init(&seg->ports,10);
+    avmlib_table_init(&seg->strings,10);
+}
+
 #endif /* _AVMC_MAIN_C */
