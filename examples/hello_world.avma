@@ -9,5 +9,5 @@
 	STOR @out,hello
 
 ; Third, use the I/O command with length (string defined already)
-	SIZE hello $R0
-	OUT @out,$R0,hello
+	SIZE hello R0
+	OUT @out,R0,hello
