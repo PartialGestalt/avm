@@ -41,7 +41,7 @@ op_t *avmc_op_new(opdef_t *def); /* Default */
 char *avmc_op_validate(opdef_t *def, op_t *op); /* Default */
 opdef_t *avmc_op_lookup(char *token);
     /* Table support */
-int avmc_opdef_cmp(table_t self, opdef_t *def, intptr_t test);
+int avmc_opdef_cmp(table_t *this, entry_t entry, intptr_t test);
 
 
 #endif /* _AVMC_OPS_H_ */

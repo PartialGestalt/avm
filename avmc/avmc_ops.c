@@ -70,9 +70,7 @@ opdef_t avmc_op_canon[] = {
 /**
  * The big op table.
  */
-TABLE_TYPE_DECLARE(opdef_table,opdef_t *);
-static TABLE_TYPE(opdef_table) * _avmc_opdef_table; /* Internal ref */
-table_t avmc_opdef_table;                           /* External ref */
+table_t *avmc_opdef_table = NULL;
 
 /**************************************************************************//**
  * @brief Comparison function to instruction definition table
@@ -80,8 +78,8 @@ table_t avmc_opdef_table;                           /* External ref */
  * @details This method is used to compare a given op name against
  * the name of an entry in the definitions table.
  *
- * @param self The table we're referring to, cast to void *
- * @param inst The instruction definition
+ * @param this The table we're referring to.
+ * @param entry The instruction definition entry we're checking
  * @param test The string to check, as an intptr_t
  *
  * @returns 0 if they match, nonzero otherwise.
@@ -89,12 +87,12 @@ table_t avmc_opdef_table;                           /* External ref */
  * @remarks
  * */
 int avmc_opdef_cmp(
-    table_t self,
-    opdef_t *inst,
+    table_t *this,
+    entry_t entry,
     intptr_t test
 )
 {
-    return strcmp((char *)test,inst->i_token);
+    return strcmp((char *)test,((opdef_t *)entry)->i_token);
 }
 
 /**************************************************************************//**
@@ -106,18 +104,18 @@ avmc_ops_init(void)
 {
     int i;
     /* General table init */
-    if (NULL_TABLE == (_avmc_opdef_table = TABLE_NEW(opdef_table,1))) {
+    avmc_opdef_table = avmlib_table_new(1);
+    if (NULL_TABLE == (avmc_opdef_table)) {
         fprintf(stderr, "Failed to init instruction definitions table.\n");
         exit(3);
     }
-    avmc_opdef_table = (table_t)_avmc_opdef_table;
     
     /* Replace search comparison function */
-    _avmc_opdef_table->compare = avmc_opdef_cmp;
+    avmc_opdef_table->compare = avmc_opdef_cmp;
 
     /* Add the canonical entries */
     for (i=0;avmc_op_canon[i].i_token != NULL;i++) {
-        TABLE_ADD(_avmc_opdef_table,&avmc_op_canon[i]);
+        avmlib_table_add(avmc_opdef_table,&avmc_op_canon[i]);
     }
 
 }
@@ -139,9 +137,9 @@ avmc_op_lookup(
     char *token
 ) 
 {
-    int idx = TABLE_FIND(_avmc_opdef_table,token);
+    int idx = avmlib_table_find(avmc_opdef_table,token);
     if (idx < 0) return NULL;
-    return _avmc_opdef_table->entries[idx];
+    return (opdef_t *)avmc_opdef_table->entries[idx];
 }
 
 /**************************************************************************//**

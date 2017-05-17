@@ -23,10 +23,8 @@ char *avmc_input_file = NULL;
 static op_t *cur_op = NULL;
 
 /* Define our internal tables */
-TABLE_TYPE_DECLARE(param,param_t);
-TABLE_DECLARE(param,avmc_params);
-
-extern table_t avmc_opdef_table;
+table_t *param_table = NULL;
+extern table_t *avmc_opdef_table;
 
 /**************************************************************************//**
  * @brief Main.
@@ -42,7 +40,7 @@ main(
     parser_init(argc,argv);
 
     /* Init global tables */
-    if (NULL == TABLE_INIT(param,&avmc_params,20)) {
+    if (NULL == (param_table = avmlib_table_new(8))) {
         fprintf(stderr, "Failed to init parameter table.\n");
         return 3;
     }
