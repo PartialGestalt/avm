@@ -16,6 +16,7 @@
 #include <fcntl.h>
 #include <string.h>
 #include <stdlib.h>
+#include <getopt.h>
 
 #include "avmc.h"
 #include "avmc_ops.h"
@@ -43,6 +44,24 @@ static table_t entity_map; /* Referenced symbols from code */
 
 /* The segment we're constructing */
 static class_segment_t cur_seg;
+
+/**
+ * Command line options.
+ * The only non-option argument we support is the input file.
+ */
+static struct option opts[] = {
+        /* "name" is the segment (program) name.  Default is the basename 
+         * of the input .avma file.
+         */
+    { "name", 1, NULL, 'n' },
+        /* "entrypoint" is the label to which the machine should branch on
+         * program load.  If no entrypoint is specified, execution begins
+         * at offset zero in the program stream.
+         */
+    { "entrypoint", 1, NULL, 'e' },
+    { NULL },
+
+};
  
 
 /**************************************************************************//**

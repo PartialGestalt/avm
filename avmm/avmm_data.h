@@ -35,7 +35,15 @@ typedef enum {
     AVM_CLASS_IMMEDIATE = 0x0A, /* Lower 16 bits are an immediate value. */
     AVM_CLASS_SEGMENT = 0x0B, /* A program segment */
 
+    AVM_CLASS_RESERVED = 0xFF /* System-reserved values */
 } avm_class_e; 
+
+/**
+ * From the AVM_CLASS_RESERVED, some entities have 
+ * predefined meanings.
+ */
+#define ENTITY_INVALID ((uint32_t)(0xFFFFFFFF))
+
 
 
 /**
@@ -79,7 +87,7 @@ typedef enum {
  * Common struct for all entity stores
  */
 typedef struct {
-    char symname[31]; /* Name of this entity */
+    char symname[64]; /* Name of this entity */
 } class_header_t;
 
     
@@ -87,6 +95,7 @@ typedef struct {
  * Storage for error entity
  */
 typedef struct {
+    class_header_t header; /* Generic common header */
     entity_t segment; /* Entity of segment containing handler */
     entity_t label;   /* Label to jump to */
 } class_error_t;
@@ -95,6 +104,7 @@ typedef struct {
  * Storage for a group entity
  */
 typedef struct {
+    class_header_t header; /* Generic common header */
     table_t members; /* Table of member entities */
 } class_group_t;
 
@@ -105,6 +115,7 @@ typedef struct {
  * differently from number entities.
  */
 typedef struct _class_register_s {
+    class_header_t header; /* Generic common header */
     /* If a register can be read, assign a getter */
     uint32_t (*get)(struct _class_register_s reg);
     /* If a register can be written, assign a setter */
@@ -116,6 +127,7 @@ typedef struct _class_register_s {
  *
  */
 typedef struct {
+    class_header_t header; /* Generic common header */
     void *buf; /* The actual buffer */
     uint32_t capacity; /* Bytes available in buf */
     uint32_t size; /* How many bytes actually stored */
@@ -128,6 +140,7 @@ typedef struct {
  * CLEAN: TODO: Flesh this out more.
  */
 typedef struct {
+    class_header_t header; /* Generic common header */
     int file; /* File descriptor */
 } class_port_t;
 
@@ -135,6 +148,7 @@ typedef struct {
  * Storage for a string entity
  */
 typedef struct {
+    class_header_t header; /* Generic common header */
     char *text;
     uint32_t capacity;
 } class_string_t;
@@ -143,7 +157,7 @@ typedef struct {
  * Storage for a label entity
  */
 typedef struct {
-    char *name; /* Label name */
+    class_header_t header; /* Generic common header */
     uint32_t offset; /* Word offset into this segment's code */
 } class_label_t;
 
@@ -151,6 +165,7 @@ typedef struct {
  * Storage for a process/thread/core entity
  */
 typedef struct {
+    class_header_t header; /* Generic common header */
     table_t registers; /* Table of per-core registers */
     table_t stack;     /* Entity stack */
 } class_process_t;
@@ -159,6 +174,7 @@ typedef struct {
  * Storage for a numeric entity 
  */
 typdef struct {
+    class_header_t header; /* Generic common header */
     uint32_t bitwidth;
     uint32_t lo_bits;
     uint32_t hi_bits;
@@ -168,6 +184,7 @@ typdef struct {
  * Storage for a program segment
  */
 typdef struct {
+    class_header_t header; /* Generic common header */
     table_t code; /* The program entity stream */
     table_t groups; /* Groups defined in this segment */
     table_t buffers; /* Buffers defined in this segment */
@@ -181,10 +198,17 @@ typdef struct {
  * Storage for a virtual machine
  */
 typedef struct {
+    class_header_t header; /* Generic common header */
+    entity_t entrypoint; /* Segment entrypoint */
     table_t interrupts; /* Exception table */
     table_t registers; /* Process-independent registers */
     table_t processes; /* PID/Thread table */
     table_t segments; /* Segments (Seg 0 is bootstrap) */
 } avm_t;
+
+
+#define avmm_entity_name(__entity) \
+    ((class_header_t *)__entity)->symname
+
 
 #endif /* _AVMM_DATA_H_ */
