@@ -36,7 +36,7 @@ int parser_result(char *result_string)
 %define parse.error verbose
 %define api.pure
 %locations
-%token INSTRUCTION ALIAS CLASS DEF /* mnemonics */
+%token INSTRUCTION ALIAS CLASS DEF REGISTER /* mnemonics */
 %token NEWLINE SEMICOLON COMMA WORD NUM STRING /* others */
 
 %start INPUT
@@ -86,5 +86,6 @@ ARG:
     WORD {if (parser_result(avmc_inst_param(PARAM_TYPE_NAME,yytext))) YYERROR;}
     | NUM {if (parser_result(avmc_inst_param(PARAM_TYPE_NUMBER, yytext))) YYERROR;}
     | STRING {if (parser_result(avmc_inst_param(PARAM_TYPE_STRING, yytext))) YYERROR;}
+    | REGISTER {if (parser_result(avmc_inst_param(PARAM_TYPE_REGISTER, yytext))) YYERROR;}
     ;
 %%

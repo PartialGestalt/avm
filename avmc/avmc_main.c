@@ -29,18 +29,19 @@ char *avmc_source_file = NULL; /* Input. */
 char *avmc_object_file = NULL; /* Output */
 
 /* Globals */
-static op_t *cur_op = NULL;
-
-/* Define our internal tables */
-extern table_t *avmc_opdef_table;
+static op_t *cur_op = NULL; 
 
 /* Named parameters */
-typdef struct {
+typedef struct {
     char *name;
     uint32_t entity;
 } entity_map_t;
 
-static table_t entity_map; /* Referenced symbols from code */
+/**
+ * The entity_map is a map of _all_ named symbols defined
+ * by this program, with associated entity coding.
+ */
+static table_t entity_map;
 
 /* The segment we're constructing */
 static class_segment_t cur_seg;
@@ -78,15 +79,7 @@ main(
     parser_init(argc,argv);
 
     /* Init global tables */
-    if (NULL == (param_table = avmlib_table_new(8))) {
-        fprintf(stderr, "Failed to init parameter table.\n");
-        return 3;
-    }
-
-    /* Init our ops table */
     avmc_ops_init();
-
-    /* Init our object storage */
     avmc_seg_init(&cur_seg);
 
     /* For now, just parse all command line args as input files */

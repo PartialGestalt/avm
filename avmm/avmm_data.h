@@ -10,6 +10,8 @@
 #ifndef _AVMM_DATA_H_
 #define _AVMM_DATA_H_
 
+#include "avmlib_table.h"
+
 /**
  * Core entity type
  */
@@ -173,7 +175,7 @@ typedef struct {
 /**
  * Storage for a numeric entity 
  */
-typdef struct {
+typedef struct {
     class_header_t header; /* Generic common header */
     uint32_t bitwidth;
     uint32_t lo_bits;
@@ -183,7 +185,7 @@ typdef struct {
 /**
  * Storage for a program segment
  */
-typdef struct {
+typedef struct {
     class_header_t header; /* Generic common header */
     table_t code; /* The program entity stream */
     table_t groups; /* Groups defined in this segment */

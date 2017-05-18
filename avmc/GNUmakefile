@@ -28,7 +28,6 @@ all: $(PROG)
 %_flex.c: %.l
 	flex -o $@ $^
 
-
 %_bison.c: %.y
 	bison -d -o $@ $^
 

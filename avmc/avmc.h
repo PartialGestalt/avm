@@ -27,7 +27,9 @@ typedef enum {
     PARAM_TYPE_STRING, /* Quoted string constant.  */
     PARAM_TYPE_NAME,   /* Register, String, or other reference */
     PARAM_TYPE_NUMBER, /* Numeric constant */
-    PARAM_TYPE_CLASS   /* Name of a datatype class */
+    PARAM_TYPE_CLASS,  /* Name of a datatype class */
+    PARAM_TYPE_REGISTER, /* Known register name */
+
 } param_type_t;
 
 /* A full parameter instance */
