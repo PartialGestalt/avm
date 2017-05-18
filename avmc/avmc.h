@@ -40,7 +40,7 @@ typedef struct  {
 } param_t;
 
 /* Globals */
-extern char *avmc_input_file;
+extern char *avmc_source_file;
 
 /* Common error string buffer -- use carefully */
 static char avmc_errstr[2048];

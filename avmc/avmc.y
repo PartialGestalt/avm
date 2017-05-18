@@ -5,7 +5,7 @@
 
 void yyerror(const char *str)
 {
-    fprintf(stderr,"ERR: (file: %s, line %d): %s\n",avmc_input_file, yylineno, str);
+    fprintf(stderr,"ERR: (file: %s, line %d): %s\n",avmc_source_file, yylineno, str);
 }
  
 int yywrap()
@@ -67,11 +67,11 @@ LINETERM:
     | SEMICOLON NEWLINE
 
 MNEMONIC: 
-      INSTRUCTION {if (parser_result(avmc_inst_start(yytext,avmc_input_file,yylineno))) YYERROR;}
+      INSTRUCTION {if (parser_result(avmc_inst_start(yytext,avmc_source_file,yylineno))) YYERROR;}
     ;
 
 DEFINE:
-    DEF {if (parser_result(avmc_inst_start(yytext,avmc_input_file,yylineno))) YYERROR;}
+    DEF {if (parser_result(avmc_inst_start(yytext,avmc_source_file,yylineno))) YYERROR;}
 
 ARGSEP: /* empty */
     | COMMA
