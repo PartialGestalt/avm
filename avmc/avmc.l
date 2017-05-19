@@ -14,8 +14,8 @@ Structural bits
 %}
 ;.*     return SEMICOLON; 
 ,       return COMMA;
-\".*\"	return STRING;
-\'.*\'	return STRING;
+["]([^"]|\\.)*["]     { return STRING; }
+[']([^']|\\.)*[']     { return STRING; }
 \n      return NEWLINE;
 [ \t]   {}
 
