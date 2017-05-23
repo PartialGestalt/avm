@@ -21,6 +21,14 @@
 #include "avmc.h"
 #include "avmc_ops.h"
 #include "avmlib_table.h"
+#include "avmlib_log.h"
+
+/* Convenience logging */
+#define avmc_log(__format_and_args...) \
+    avm_log("avmc",__format_and_args)
+
+#define avmc_err(__format_and_args...) \
+    avm_err("avmc",__format_and_args)
 
 /* Prototypes */
 void avmc_seg_init(class_segment_t *seg);
@@ -85,7 +93,7 @@ main(
     /* For now, just parse all command line args as input files */
     for (i=1;(i<=(argc-1));i++) {
         avmc_source_file = strdup(argv[i]);
-        printf("PARSING: %s\n",avmc_source_file);
+        avmc_log("PARSING: %s\n",avmc_source_file);
         yylineno = 1; /* Reset line number */
         yyin = fopen(argv[i],"r");
         yyparse();
@@ -141,9 +149,9 @@ avmc_inst_start(
          * file....
          */
     if (strcmp(instruction,i_def->i_token)) {
-        fprintf(stdout,"OP: %s (%s)\n",instruction, i_def->i_token);
+        avmc_log("OP: %s (%s)\n",instruction, i_def->i_token);
     } else {
-        fprintf(stdout,"OP: %s\n",i_def->i_token);
+        avmc_log("OP: %s\n",i_def->i_token);
     }
 
     return NULL; /* Success! */
@@ -176,7 +184,7 @@ avmc_inst_param(
     char *p_text
 )
 {
-    printf("   param: %s\n",p_text);
+    avmc_log("   param: %s\n",p_text);
     return NULL;
 }
 
