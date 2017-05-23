@@ -118,6 +118,10 @@ typedef struct {
  */
 typedef struct _class_register_s {
     class_header_t header; /* Generic common header */
+    /* Register-specific private data */
+    intptr_t private_data;
+    /* Register initializer */
+    void (*reset)(struct _class_register_s reg);
     /* If a register can be read, assign a getter */
     uint32_t (*get)(struct _class_register_s reg);
     /* If a register can be written, assign a setter */
