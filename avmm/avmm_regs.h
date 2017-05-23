@@ -23,8 +23,8 @@ void avmm_regs_init(avm_t *avm);
  */
 #ifdef _AVMLIB_REGS_C_ 
 class_register_t avm_global_regs[] = {
-    { {"CS"},NULL,NULL,NULL,NULL},
-    {"\0",NULL,NULL,NULL,NULL}
+    { {"CS"},0,NULL,NULL,NULL},
+    {"\0",0,NULL,NULL,NULL}
 };
 #else
 extern class_register_t avm_global_regs[];

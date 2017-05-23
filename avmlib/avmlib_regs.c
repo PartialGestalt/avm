@@ -10,7 +10,7 @@
 #ifndef _AVMLIB_REGS_C_
 #define _AVMLIB_REGS_C_
 
-#include "avmm_regs.h"
+#include "avmlib.h"
 
 /**************************************************************************//**
  * @brief

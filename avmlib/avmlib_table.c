@@ -9,7 +9,7 @@
 #ifndef _AVMLIB_TABLE_C_ 
 #define _AVMLIB_TABLE_C_
 
-#include "avmlib_table.h"
+#include "avmlib.h"
 
 /**************************************************************************//**
  * @brief Provide a default 'add' method.
@@ -125,6 +125,7 @@ avmlib_table_init(
 
     /* Step 2: Attempt initial allocation */
     if (NULL == (entries = calloc(initial_capacity,sizeof(entry_t)))) {
+        avmlib_err("%s: Allocation failure.\n",__func__);
         return NULL;
     }
 
@@ -150,7 +151,7 @@ avmlib_table_init(
  *
  * @param initial_capacity Initial table capacity
  *
- * @returns Result code indicating success or failure mode
+ * @returns Newly allocated table on success, NULL on failure.
  *
  * @remarks
  * */
@@ -165,6 +166,7 @@ avmlib_table_new(
 
     /* Step 2: Struct alloc */
     if (NULL == (newtable = malloc(sizeof(table_t)))) {
+        avmlib_err("%s: Alloc failure.\n",__func__);
         return NULL;
     }
 
