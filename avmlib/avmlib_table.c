@@ -24,7 +24,7 @@
  *
  * @remarks
  * */
-static int 
+int 
 avmlib_table_default_add(
     table_t *this,
     entry_t entry
@@ -60,7 +60,7 @@ avmlib_table_default_add(
  * @remarks Note that user functions will be less direct, typically 
  * comparing a key to elements within an entry.
  * */
-static int
+int
 avmlib_table_default_compare(
     table_t *this,
     entry_t entry,
@@ -85,13 +85,18 @@ avmlib_table_default_compare(
  *
  * @remarks Note that user functions should be a lot smarter about this.
  * */
-static int
+int
 avmlib_table_default_find(
     table_t *this,
     intptr_t test
 )
 {
     int i;
+    
+    /* Assign comparison if it hasn't been set yet */
+    if (!this->compare) this->compare = avmlib_table_default_compare;
+
+    /* Walk list */
     for (i=0;i<this->size;i++) {
         if (0 == this->compare(this,this->entries[i],test)) {
             return i;
@@ -239,6 +244,44 @@ avmlib_table_destroy(
     this->capacity = this->size = 0;
     free(this->entries);
     free(this);
+}
+
+/**************************************************************************//**
+ * @brief Wrapper around a table add.
+ *
+ * @details This method wraps the table add dereferencing
+ *
+ * @param this Table to which the entry will be added
+ * @param entry Entry to add.
+ *
+ * @returns Slot into which entry was added.
+ *
+ * @remarks
+ * */
+int
+avmlib_table_add_wrapper(
+    table_t *this,
+    entry_t entry
+)
+{
+    /* Validate table */
+    if (!this->add) this->add = avmlib_table_default_add;
+
+    /* Do the add */
+    return this->add(this,entry);
+}
+
+int
+avmlib_table_find_wrapper(
+    table_t *this,
+    intptr_t test
+)
+{
+    /* Validate table */
+    if (!this->find) this->find = avmlib_table_default_find;
+
+    /* Do the find. */
+    return this->find(this,test);
 }
 
 #endif /* _AVMLIB_TABLE_C_ */

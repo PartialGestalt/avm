@@ -13,6 +13,53 @@
 #include "avmlib.h"
 
 /**************************************************************************//**
+ * @brief Register comparison function
+ *
+ * @details This method compares a test value to an entry in the table.
+ *
+ * @param this The table containing the entry for comparison
+ * @param left The entry to check
+ * @param test The test value.
+ *
+ * @returns Zero if a match is found, nonzero otherwise.
+ *
+ * @remarks Register comparison goes by entity name.  Test should be a string.
+ * */
+int
+avmlib_reg_compare(
+    table_t *this,
+    entry_t left,
+    intptr_t test
+) 
+{
+    char *testname = (char *)test;
+
+    if (!strcmp(avmm_entity_name(left),testname)) return 0;
+    return -1;
+}
+
+/**************************************************************************//**
+ * @brief Table handler for destroying a register.
+ *
+ * @details This method handles the specifics of releasing resources
+ * associated with a given register.
+ *
+ * @param this Table containing registers
+ * @param entry The register to release.
+ *
+ * @remarks CLEAN: TODO: This may be difficult. Implement me.
+ * */
+void
+avmlib_reg_destroy(
+    table_t *this,
+    entry_t entry
+)
+{
+    free((void *)entry);
+    return;
+}
+
+/**************************************************************************//**
  * @brief
  *
  * @details Base register initializations.
@@ -35,7 +82,11 @@ avmlib_regs_init(
     /* Step 1: Clear table */
     avmlib_table_clear(&avm->registers);
 
-    /* Step 2: Load from defs */
+    /* Step 2: Set custom table handlers */
+    avm->registers.compare = avmlib_reg_compare;
+    avm->registers.destroy = avmlib_reg_destroy;
+
+    /* Step 3: Load from defs */
     for (i=0;AVM_REG_VALID(&avm_global_regs[i]);i++) {
         avmlib_table_add(&avm->registers,&avm_global_regs[i]);
     }

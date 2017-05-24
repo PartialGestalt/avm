@@ -16,15 +16,21 @@
  * Predefined prototypes
  */
 void avmm_regs_init(avm_t *avm);
+void avmm_regs_default_reset(class_register_t *reg);
+uint32_t avmm_regs_default_get(class_register_t *reg);
+uint32_t avmm_regs_default_set(class_register_t *reg, uint32_t value);
 
 
 /**
  * Definitions tables
+ *
+ * NULL handlers will resolve to default handlers.
  */
 #ifdef _AVMLIB_REGS_C_ 
 class_register_t avm_global_regs[] = {
-    { {"CS"},0,NULL,NULL,NULL},
-    {"\0",0,NULL,NULL,NULL}
+    { {"CS"},REGMODE_RW,0,NULL,NULL,NULL},
+    { {"IP"},REGMODE_RW,0,NULL,NULL,NULL},
+    {{"\0"},REGMODE_INVALID}
 };
 #else
 extern class_register_t avm_global_regs[];
@@ -39,8 +45,7 @@ extern class_register_t avm_global_regs[];
  */
 #define AVM_REG_VALID(__reg) \
     ((((class_register_t *)__reg)->header.symname[0]) && \
-          (((class_register_t *)__reg)->get || \
-           ((class_register_t *)__reg)->set))
+          (((class_register_t *)__reg)->mode != REGMODE_INVALID))
 
 
 #endif /* _AVMM_REGS_H_ */

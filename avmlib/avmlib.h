@@ -11,7 +11,9 @@
 
 #include "avmm_data.h"
 #include "avmlib_regs.h"
+#include "avmlib_ports.h"
 #include "avmlib_table.h"
+#include "avmlib_machine.h"
 #include "avmlib_log.h"
 
 #define avmlib_log(__format_and_args...) \

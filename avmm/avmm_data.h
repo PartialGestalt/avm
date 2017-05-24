@@ -11,6 +11,7 @@
 #define _AVMM_DATA_H_
 
 #include "avmlib_table.h"
+#include <stdio.h>
 
 /**
  * Core entity type
@@ -110,6 +111,15 @@ typedef struct {
     table_t members; /* Table of member entities */
 } class_group_t;
 
+
+typedef enum register_mode_e {
+    REGMODE_INVALID = 0, 
+    REGMODE_RO = 0x01,
+    REGMODE_WO = 0x02,
+    REGMODE_RW = 0x03,
+
+} register_mode_t;
+
 /**
  * Storage for a register entity
  *
@@ -118,14 +128,16 @@ typedef struct {
  */
 typedef struct _class_register_s {
     class_header_t header; /* Generic common header */
+    /* Register mode */
+    register_mode_t mode;
     /* Register-specific private data */
     intptr_t private_data;
     /* Register initializer */
-    void (*reset)(struct _class_register_s reg);
+    void (*reset)(struct _class_register_s *reg);
     /* If a register can be read, assign a getter */
-    uint32_t (*get)(struct _class_register_s reg);
+    uint32_t (*get)(struct _class_register_s *reg);
     /* If a register can be written, assign a setter */
-    uint32_t (*set)(struct _class_register_s reg, uint32_t value);
+    uint32_t (*set)(struct _class_register_s *reg, uint32_t value);
 } class_register_t;
 
 /**
@@ -147,7 +159,9 @@ typedef struct {
  */
 typedef struct {
     class_header_t header; /* Generic common header */
-    int file; /* File descriptor */
+    char *path; /* File path, if meaningful */
+    int fd; /* File descriptor */
+    FILE *file; /* File pointer */
 } class_port_t;
 
 /**
@@ -160,10 +174,18 @@ typedef struct {
 } class_string_t;
 
 /**
+ * Storage for an undefined entity
+ */
+typedef struct {
+    class_header_t header; /* Generic common header */
+} class_undefined_t;
+
+/**
  * Storage for a label entity
  */
 typedef struct {
     class_header_t header; /* Generic common header */
+    uint32_t segment; /* Which segment this label is in */
     uint32_t offset; /* Word offset into this segment's code */
 } class_label_t;
 
@@ -208,6 +230,7 @@ typedef struct {
     entity_t entrypoint; /* Segment entrypoint */
     table_t interrupts; /* Exception table */
     table_t registers; /* Process-independent registers */
+    table_t ports; /* Open ports */
     table_t processes; /* PID/Thread table */
     table_t segments; /* Segments (Seg 0 is bootstrap) */
 } avm_t;

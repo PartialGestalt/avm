@@ -28,6 +28,7 @@ avmlib_machine_init(
 )
 {
     avmlib_regs_init(this);
+    avmlib_ports_init(this);
 
     return this;
 }
@@ -48,9 +49,19 @@ avmlib_machine_new(void)
 {
     avm_t *newmach;
 
+    /* Base alloc */
     if (NULL == (newmach = malloc(sizeof(avm_t)))) {
         avmlib_err("%s: Alloc failure.\n",__func__);
+        return NULL;
     }
+
+    /* Core init */
+    if (NULL == avmlib_machine_init(newmach)) {
+        free(newmach);
+        return NULL;
+    }
+
+    return newmach;
 }
 
 #define _AVMLIB_MACHINE_C_ 

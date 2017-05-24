@@ -53,19 +53,23 @@ typedef struct _table_s {
 #define NULL_TABLE (table_t *)(NULL)
 
 /* Prototypes */
+    /* Default handlers */
+int avmlib_table_default_add(table_t *this, entry_t entry);
+int avmlib_table_default_compare(table_t *this, entry_t entry, intptr_t test);
+int avmlib_table_default_find(table_t *this, intptr_t test);
+    /* Core API */
 table_t *avmlib_table_init(table_t *this, int initial_capacity);
 table_t *avmlib_table_new(int initial_capacity);
 void     avmlib_table_clear(table_t *this);
 void     avmlib_table_destroy(table_t *this);
+    /* Wrappers */
+int avmlib_table_add_wrapper(table_t *this, entry_t entry);
+int avmlib_table_find_wrapper(table_t *this, intptr_t test);
 
-/**
- * Wrapper for adding an entry to the table.
- * Mostly just for the cast.
- */
 #define avmlib_table_add(__tbl,__entry) \
-    (__tbl)->add((__tbl),((entry_t)(__entry)))
+    avmlib_table_add_wrapper((__tbl),((entry_t)__entry)) 
 
 #define avmlib_table_find(__tbl,__test) \
-    (__tbl)->find((__tbl),((entry_t)(__test)))
+    avmlib_table_find_wrapper(__tbl,(intptr_t)__test)
 
 #endif /* _AVMLIB_TABLE_H_ */

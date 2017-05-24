@@ -20,8 +20,7 @@
 
 #include "avmc.h"
 #include "avmc_ops.h"
-#include "avmlib_table.h"
-#include "avmlib_log.h"
+#include "avmlib.h"
 
 /* Convenience logging */
 #define avmc_log(__format_and_args...) \
@@ -53,6 +52,9 @@ static table_t entity_map;
 
 /* The segment we're constructing */
 static class_segment_t cur_seg;
+
+/* The reference machine for predefined values */
+static avm_t *avm;
 
 /**
  * Command line options.
@@ -87,6 +89,7 @@ main(
     parser_init(argc,argv);
 
     /* Init global tables */
+    avm = avmlib_machine_new();
     avmc_ops_init();
     avmc_seg_init(&cur_seg);
 
