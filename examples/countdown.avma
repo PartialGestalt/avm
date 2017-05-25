@@ -6,13 +6,13 @@
 ; Create a string 
 	DEF STRING, current    
 ; Init counter from immediate
-	STOR R0, 0x10  ;
+	STOR GR0, 0x10  ;
 
 ; Set a loop label
 	LABEL print_it  ; Define a label that we can come back to.
 
 ; Get the count as a string value and emit 
-	STOR current,R0
+	STOR current,GR0
 	STOR @out, current
 
 ; Test
