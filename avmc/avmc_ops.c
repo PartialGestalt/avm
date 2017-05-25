@@ -30,7 +30,7 @@
  * so may not have an actual opcode.
  */
 opdef_t avmc_op_canon[] = {
-    /* TOKEN, OPCODE, ARGC, factory, validator */
+    /* TOKEN, OPCODE, minimum ARGC, factory, validator */
         /* Internal compiler bits */
     {"DEF",AVM_OP_INVALID,2,NULL,NULL},
     {"WIDTH",AVM_OP_INVALID,2,NULL,NULL},

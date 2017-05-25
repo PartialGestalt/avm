@@ -29,6 +29,14 @@
 #define avmc_err(__format_and_args...) \
     avm_err("avmc",__format_and_args)
 
+/* Building error return strings for parser... */
+static char _avmc_errstr[256];
+#define avmc_err_ret(__format_and_args...) \
+    ({do { \
+        snprintf(_avmc_errstr,255,__format_and_args); \
+    } while(0); _avmc_errstr;})
+
+
 /* Prototypes */
 void avmc_seg_init(class_segment_t *seg);
 
@@ -160,6 +168,21 @@ avmc_inst_start(
     return NULL; /* Success! */
 }
 
+static char *
+avmc_inst_internal(
+    op_t *op
+)
+{
+    if (!op) return avmc_err_ret("Missing instruction.");
+
+    if (!strcmp(op->i_ref->i_token,"DEF")) {
+    } else {
+        return avmc_err_ret("Internal error: \"%s\" unimplemented.",op->i_ref->i_token);
+    }
+
+    return NULL;
+}
+
 /**************************************************************************//**
  * @brief Finish an in-process instruction
  *
@@ -174,20 +197,66 @@ avmc_inst_start(
 char *
 avmc_inst_finish(void)
 {
+
+    /* Basic checks */
     if (!cur_op) {
         /* This should never ever happen. */
         return "ERROR: No instruction processing in progress.";
     }
+    if (cur_op->i_paramc < cur_op->i_ref->i_argc) {
+        return "ERROR: Not enough parameters.";
+    }
+
+    /* Switch on opcode */
+    switch (cur_op->i_ref->i_opcode) {
+        case AVM_OP_INVALID:{
+            /* Internal -- probably 'DEF' */
+            return avmc_inst_internal(cur_op);
+            break;
+        }
+        default: {
+            return avmc_err_ret("ERROR: Unimplemented operation \"%s\".",cur_op->i_ref->i_token);
+            break;
+        }
+    }
     return NULL;
 }
 
+/**************************************************************************//**
+ * @brief Add a parameter to the working instruction
+ *
+ * @details
+ *
+ * @param p_type Type of parameter (register, class, etc.)
+ * @param p_text parameter text from source
+ *
+ * @returns NULL on success, error message on failure.
+ *
+ * @remarks
+ * */
 char *
 avmc_inst_param(
     param_type_t p_type,
     char *p_text
 )
 {
+    param_t *p;
     avmc_log("   param: %s\n",p_text);
+
+    /* Basic checks */
+    if (cur_op->i_paramc >= 64) {
+        return "Too many parameters.";
+    }
+    if (NULL == (p = calloc(1,sizeof(param_t)))) {
+        return "Alloc error in parameter processing.";
+    }
+
+    p->p_text = strdup(p_text);
+    p->p_type = p_type;
+    p->p_opcode = ENTITY_INVALID;
+
+    cur_op->i_params[cur_op->i_paramc] = p;
+    cur_op->i_paramc++;
     return NULL;
 }
 
