@@ -53,5 +53,13 @@ char *avmc_inst_start(char *instruction, char *file, int lineno);
 char *avmc_inst_param(param_type_t p_type, char *p_text);
 char *avmc_inst_finish(void);
 
+/* Building error return strings for parser... */
+static char _avmc_errstr[256];
+#define avmc_err_ret(__format_and_args...) \
+    ({do { \
+        snprintf(_avmc_errstr,255,__format_and_args); \
+    } while(0); _avmc_errstr;})
+
+
 
 #endif /* _AVMC_H_ */

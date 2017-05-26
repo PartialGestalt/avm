@@ -27,6 +27,18 @@ avmlib_machine_init(
     avm_t *this
 )
 {
+    int i;
+    /* Step 1: Setup defaults */
+    sprintf(avmm_entity_name(this),"AVM Machine Instance");
+    this->entrypoint = AVMM_DEFAULT_ENTRYPOINT;
+
+    /* Step 2: Prepare all tables */
+    avmlib_table_init(&(this->tables),AVM_CLASS_MAX);
+    for (i=0;i<AVM_CLASS_MAX;i++) {
+        avmlib_table_add(&(this->tables),avmlib_table_new(32));
+    }
+
+    /* Step 3: Init default table entries */
     avmlib_regs_init(this);
     avmlib_ports_init(this);
 

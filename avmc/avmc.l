@@ -66,7 +66,26 @@ NUMBER   return CLASS;
 
 %{
     /*
-     * Register names
+     * Global Register names
+     *
+     * Although programs can define their own integer variables,
+     * these are special named variables that are predefined and
+     * operate a little bit differently.  These are all reserved 
+     * words.
+     */
+%}
+CLK      return REGISTER; /* Clock */
+GR0      return REGISTER; /* General Purpose register (global) */
+GR1      return REGISTER; /* General Purpose register (global) */
+GR2      return REGISTER; /* General Purpose register (global) */
+GR3      return REGISTER; /* General Purpose register (global) */
+GR4      return REGISTER; /* General Purpose register (global) */
+GR5      return REGISTER; /* General Purpose register (global) */
+GR6      return REGISTER; /* General Purpose register (global) */
+GR7      return REGISTER; /* General Purpose register (global) */
+%{
+    /*
+     * Per-core (thread) Register names
      *
      * Although programs can define their own integer variables,
      * these are special named variables that are predefined and
@@ -76,7 +95,6 @@ NUMBER   return CLASS;
 %}
 CS      return REGISTER; /* Current segment */
 IP      return REGISTER; /* Instruction Pointer */
-CLK     return REGISTER; /* Clock */
 LR0      return REGISTER; /* General Purpose register (local) */
 LR1      return REGISTER; /* General Purpose register (local) */
 LR2      return REGISTER; /* General Purpose register (local) */
@@ -85,14 +103,6 @@ LR4      return REGISTER; /* General Purpose register (local) */
 LR5      return REGISTER; /* General Purpose register (local) */
 LR6      return REGISTER; /* General Purpose register (local) */
 LR7      return REGISTER; /* General Purpose register (local) */
-GR0      return REGISTER; /* General Purpose register (global) */
-GR1      return REGISTER; /* General Purpose register (global) */
-GR2      return REGISTER; /* General Purpose register (global) */
-GR3      return REGISTER; /* General Purpose register (global) */
-GR4      return REGISTER; /* General Purpose register (global) */
-GR5      return REGISTER; /* General Purpose register (global) */
-GR6      return REGISTER; /* General Purpose register (global) */
-GR7      return REGISTER; /* General Purpose register (global) */
 
 %{
     /*

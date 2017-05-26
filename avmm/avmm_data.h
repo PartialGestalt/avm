@@ -20,9 +20,9 @@ typedef uint32_t entity_t;
 
 /**
  * Enumerate the supported entity types.  Each type's value defined
- * here is an index into the table of tables.  All opcodes (entities) of
- * each type will have the type as the high 8-bits of the
- * 32-bit opcode value.
+ * here may be an index into a table of tables.  All entity references
+ * of each type will have the type as the high 8-bits of the
+ * 32-bit entity value.
  */
 typedef enum {
     AVM_CLASS_INSTRUCTION = 0x00, /* Basic OP */
@@ -41,6 +41,8 @@ typedef enum {
     AVM_CLASS_RESERVED = 0xFF /* System-reserved values */
 } avm_class_e; 
 
+#define AVM_CLASS_MAX AVM_CLASS_SEGMENT+1
+
 /**
  * From the AVM_CLASS_RESERVED, some entities have 
  * predefined meanings.
@@ -53,6 +55,7 @@ typedef enum {
  * Enumerate the supported opcodes
  */
 typedef enum {
+    /* Runtime OPs */
     AVM_OP_NOP = 0x00,
     AVM_OP_STOR = 0x01,
     AVM_OP_INS = 0x02,
@@ -80,8 +83,10 @@ typedef enum {
     AVM_OP_FILE = 0x16,
     AVM_OP_IN = 0x17,
     AVM_OP_OUT = 0x18,
-    AVM_OP_SIZE = 0x19,
 
+    /* Compiler or linker instructions */
+    AVM_OP_DEF = 0xA0,
+    AVM_OP_SIZE = 0xA1,
     AVM_OP_INVALID = 0xFF
 
 } avm_opcode_t;
@@ -213,13 +218,7 @@ typedef struct {
  */
 typedef struct {
     class_header_t header; /* Generic common header */
-    table_t code; /* The program entity stream */
-    table_t groups; /* Groups defined in this segment */
-    table_t buffers; /* Buffers defined in this segment */
-    table_t ports; /* Ports defined in this segment */
-    table_t strings; /* Text strings defined in this segment */
-    table_t labels; /* Labels defined in this segment */
-    table_t numbers; /* Numeric variables */
+    table_t tables; /* Table of tables */
 } class_segment_t;
 
 /**
@@ -227,17 +226,18 @@ typedef struct {
  */
 typedef struct {
     class_header_t header; /* Generic common header */
+    table_t tables; /* Table of tables */
     entity_t entrypoint; /* Segment entrypoint */
-    table_t interrupts; /* Exception table */
-    table_t registers; /* Process-independent registers */
-    table_t ports; /* Open ports */
-    table_t processes; /* PID/Thread table */
-    table_t segments; /* Segments (Seg 0 is bootstrap) */
 } avm_t;
 
 
 #define avmm_entity_name(__entity) \
     ((class_header_t *)__entity)->symname
+
+#define AVMM_DEFAULT_ENTRYPOINT ((entry_t)(0))
+
+#define AVM_CLASS_TABLE(__this, __class)  \
+    ((table_t *)(((avm_t *)__this)->tables.entries[(int)__class]))
 
 
 #endif /* _AVMM_DATA_H_ */

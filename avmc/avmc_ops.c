@@ -11,6 +11,8 @@
 
 #include <stdlib.h>
 #include "avmc_ops.h"
+#include "avmm_data.h"
+#include "avmlib.h"
 
 /**
  * NOTE: The actual coding of an opcode is a big-endian 32-bit value, 
@@ -32,8 +34,8 @@
 opdef_t avmc_op_canon[] = {
     /* TOKEN, OPCODE, minimum ARGC, factory, validator */
         /* Internal compiler bits */
-    {"DEF",AVM_OP_INVALID,2,NULL,NULL},
-    {"WIDTH",AVM_OP_INVALID,2,NULL,NULL},
+    {"DEF",AVM_OP_DEF,2,NULL,NULL},
+    {"SIZE",AVM_OP_SIZE,3,NULL,NULL},
         /* Structural ops */
     {"NOP",AVM_OP_NOP,0,NULL,NULL}, 
     {"STOR",AVM_OP_STOR,2,NULL,NULL},
@@ -63,7 +65,6 @@ opdef_t avmc_op_canon[] = {
     {"FILE",AVM_OP_FILE,2,NULL,NULL},
     {"IN",AVM_OP_IN,3,NULL,NULL},
     {"OUT",AVM_OP_OUT,3,NULL,NULL},
-    {"SIZE",AVM_OP_SIZE,3,NULL,NULL},
     {NULL} /* Mark end */
 };
 
@@ -71,6 +72,30 @@ opdef_t avmc_op_canon[] = {
  * The big op table.
  */
 table_t *avmc_opdef_table = NULL;
+
+
+/*
+ * Canonical CLASS naming
+ */
+struct {
+    const char *class_name;
+    int class_prefix;
+} avm_class_canon[] = {
+    { "INSTRUCTION", AVM_CLASS_INSTRUCTION },
+    { "ERROR", AVM_CLASS_ERROR },
+    { "GROUP", AVM_CLASS_GROUP },
+    { "REGISTER", AVM_CLASS_REGISTER },
+    { "BUFFER", AVM_CLASS_BUFFER },
+    { "PORT", AVM_CLASS_PORT },
+    { "STRING", AVM_CLASS_STRING },
+    { "LABEL", AVM_CLASS_LABEL },
+    { "PROCESS", AVM_CLASS_PROCESS },
+    { "NUMBER", AVM_CLASS_NUMBER },
+    { "IMMEDIATE", AVM_CLASS_IMMEDIATE },
+    { "SEGMENT", AVM_CLASS_SEGMENT },
+    { NULL, AVM_CLASS_RESERVED}
+};
+
 
 /**************************************************************************//**
  * @brief Comparison function to instruction definition table
@@ -195,4 +220,82 @@ avmc_op_new(
     ni->i_ref = def;
 }
 
+/**************************************************************************//**
+ * @brief Lookup a class prefix from a given name
+ *
+ * @param str String containing name to lookup.
+ *
+ * @returns Class prefix
+ *
+ * @remarks
+ * */
+int
+avmc_class_lookup(
+    char *str
+)
+{
+    int i;
+    for (i=0;avm_class_canon[i].class_prefix != AVM_CLASS_RESERVED;i++) {
+        if (!strcmp(str,avm_class_canon[i].class_name)) {
+            return avm_class_canon[i].class_prefix;
+        }
+    }
+    /* Not found. */
+    return AVM_CLASS_RESERVED;
+}
+
+/**************************************************************************//**
+ * @brief Implement compilation of a DEF instruction
+ *
+ * @details
+ *
+ * @param
+ *
+ * @returns Result code indicating success or failure mode
+ *
+ * @remarks
+ * */
+char *
+avmc_compile_def(
+    class_segment_t *seg,
+    op_t *op
+)
+{
+    int class = AVM_CLASS_RESERVED;
+    uint32_t classarg = AVM_CLASS_RESERVED;
+
+    if (!op || !seg) {
+        return avmc_err_ret("Internal corruption; no active seg or op.");
+    }
+    /* 
+     * Determine class number 
+     */
+    switch(op->i_params[0]->p_type) {
+        case PARAM_TYPE_NUMBER: {
+            /* Convert numeric */
+            if (0 == avmlib_getnum(op->i_params[0]->p_text,&classarg)) {
+                /* Bad conversion */
+                return avmc_err_ret("Conversion error in DEF class.");
+            }
+            if (classarg < 0 || (classarg > 255)) {
+                /* Bad class number */
+                return avmc_err_ret("Bad value for class.");
+            }
+            class = (int)(classarg & 0xFF);
+            break;
+        }
+        case PARAM_TYPE_CLASS: {
+            /* Lookup string */
+            class = avmc_class_lookup(op->i_params[0]->p_text);
+            break;
+        }
+        default: {
+            return avmc_err_ret("Syntax: first parameter must be storage class name or value.");
+        }
+    }
+
+    /* Got class; get name */
+
+
+}
 #endif /* _AVMC_OPS_C_*/

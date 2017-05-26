@@ -34,7 +34,7 @@ typedef struct op_s {
 
 
 /**
- * Prototypes for op processing
+ * Prototypes for op metaprocessing
  */
 void avmc_ops_init(void);
 op_t *avmc_op_new(opdef_t *def); /* Default */
@@ -42,6 +42,11 @@ char *avmc_op_validate(opdef_t *def, op_t *op); /* Default */
 opdef_t *avmc_op_lookup(char *token);
     /* Table support */
 int avmc_opdef_cmp(table_t *this, entry_t entry, intptr_t test);
+
+/**
+ * Prototypes of actual compilation
+ */
+char *avmc_compile_def(class_segment_t *seg, op_t *op);
 
 
 #endif /* _AVMC_OPS_H_ */

@@ -29,14 +29,6 @@
 #define avmc_err(__format_and_args...) \
     avm_err("avmc",__format_and_args)
 
-/* Building error return strings for parser... */
-static char _avmc_errstr[256];
-#define avmc_err_ret(__format_and_args...) \
-    ({do { \
-        snprintf(_avmc_errstr,255,__format_and_args); \
-    } while(0); _avmc_errstr;})
-
-
 /* Prototypes */
 void avmc_seg_init(class_segment_t *seg);
 
@@ -168,21 +160,6 @@ avmc_inst_start(
     return NULL; /* Success! */
 }
 
-static char *
-avmc_inst_internal(
-    op_t *op
-)
-{
-    if (!op) return avmc_err_ret("Missing instruction.");
-
-    if (!strcmp(op->i_ref->i_token,"DEF")) {
-    } else {
-        return avmc_err_ret("Internal error: \"%s\" unimplemented.",op->i_ref->i_token);
-    }
-
-    return NULL;
-}
-
 /**************************************************************************//**
  * @brief Finish an in-process instruction
  *
@@ -204,15 +181,17 @@ avmc_inst_finish(void)
         return "ERROR: No instruction processing in progress.";
     }
     if (cur_op->i_paramc < cur_op->i_ref->i_argc) {
-        return "ERROR: Not enough parameters.";
+        return avmc_err_ret("ERROR: Not enough parameters for operation \"%s\" (expected %d, got %d).",
+                            cur_op->i_ref->i_token,
+                            cur_op->i_ref->i_argc, 
+                            cur_op->i_paramc);
     }
 
     /* Switch on opcode */
     switch (cur_op->i_ref->i_opcode) {
-        case AVM_OP_INVALID:{
-            /* Internal -- probably 'DEF' */
-            return avmc_inst_internal(cur_op);
-            break;
+        case AVM_OP_DEF:{
+            /* Internal */
+            return avmc_compile_def(&cur_seg, cur_op);
         }
         default: {
             return avmc_err_ret("ERROR: Unimplemented operation \"%s\".",cur_op->i_ref->i_token);
@@ -293,21 +272,22 @@ avmc_entity_map_compare(
  * */
 void
 avmc_seg_init(
-    class_segment_t *seg
+    class_segment_t *this
 )
 {
+    int i;
     /* Internal entity map */
     avmlib_table_init(&entity_map,64);
     entity_map.compare = avmc_entity_map_compare;
 
-    /* Code Stream */
-    avmlib_table_init(&seg->code,256);
-    seg->code.alloc_count = 32; /* Expect quite a bit */
+    /* Generic table of tables prep */
+    avmlib_table_init(&(this->tables),AVM_CLASS_MAX);
+    for (i=0;i<AVM_CLASS_MAX;i++) {
+        avmlib_table_add(&(this->tables),avmlib_table_new(10));
+    }
 
-    avmlib_table_init(&seg->groups,10);
-    avmlib_table_init(&seg->buffers,10);
-    avmlib_table_init(&seg->ports,10);
-    avmlib_table_init(&seg->strings,10);
+    /* Code Stream should increment by quite a bit */
+    AVM_CLASS_TABLE(this,AVM_CLASS_INSTRUCTION)->alloc_count = 128;
 }
 
 #endif /* _AVMC_MAIN_C */

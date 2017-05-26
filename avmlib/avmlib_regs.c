@@ -78,17 +78,18 @@ avmlib_regs_init(
 )
 {
     int i;
+    table_t *regs = AVM_CLASS_TABLE(avm,AVM_CLASS_REGISTER);
 
     /* Step 1: Clear table */
-    avmlib_table_clear(&avm->registers);
+    avmlib_table_clear(regs);
 
     /* Step 2: Set custom table handlers */
-    avm->registers.compare = avmlib_reg_compare;
-    avm->registers.destroy = avmlib_reg_destroy;
+    regs->compare = avmlib_reg_compare;
+    regs->destroy = avmlib_reg_destroy;
 
     /* Step 3: Load from defs */
     for (i=0;AVM_REG_VALID(&avm_global_regs[i]);i++) {
-        avmlib_table_add(&avm->registers,&avm_global_regs[i]);
+        avmlib_table_add(regs,&avm_global_regs[i]);
     }
 }
 

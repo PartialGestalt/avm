@@ -94,15 +94,16 @@ avmlib_ports_init(
 {
     int i;
     class_port_t *newport;
+    table_t *ports = AVM_CLASS_TABLE(avm,AVM_CLASS_PORT);
 
     /* Step 1: Clear table */
-    avmlib_table_clear(&avm->ports);
+    avmlib_table_clear(ports);
 
     /* Step 2: Set custom table handlers */
-    avm->ports.compare = avmlib_port_compare;
-    avm->ports.destroy = avmlib_port_destroy;
+    ports->compare = avmlib_port_compare;
+    ports->destroy = avmlib_port_destroy;
 
-    /* Step 3: Special ports for std */
+    /* Step 3: Special ports for std{in,out,err} */
     if (NULL == (newport = malloc(sizeof(class_port_t)))) {
         avmlib_err("%s: Alloc failure.\n",__func__);
         return;
@@ -112,7 +113,7 @@ avmlib_ports_init(
         newport->fd = 0;
         newport->file = stdin;
     }
-    avmlib_table_add(&avm->ports,newport);
+    avmlib_table_add(ports,newport);
     if (NULL == (newport = malloc(sizeof(class_port_t)))) {
         avmlib_err("%s: Alloc failure.\n",__func__);
         return;
@@ -122,7 +123,7 @@ avmlib_ports_init(
         newport->fd = 1;
         newport->file = stdout;
     }
-    avmlib_table_add(&avm->ports,newport);
+    avmlib_table_add(ports,newport);
     if (NULL == (newport = malloc(sizeof(class_port_t)))) {
         avmlib_err("%s: Alloc failure.\n",__func__);
         return;
@@ -132,12 +133,12 @@ avmlib_ports_init(
         newport->fd = 2;
         newport->file = stderr;
     }
-    avmlib_table_add(&avm->ports,newport);
+    avmlib_table_add(ports,newport);
 
 
     /* Step 3: Load from defs */
     for (i=0;AVM_PORT_VALID(&avm_global_ports[i]);i++) {
-        avmlib_table_add(&avm->ports,&avm_global_ports[i]);
+        avmlib_table_add(ports,&avm_global_ports[i]);
     }
 }
 

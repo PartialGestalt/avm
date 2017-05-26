@@ -21,6 +21,11 @@
 #include <inttypes.h>
 
 /**
+ * Define the default table increment size.
+ */
+#define AVMLIB_DEFAULT_TABLE_SIZE 16
+
+/**
  * Table entry
  *
  * Each table entry is either an integer, or a pointer to

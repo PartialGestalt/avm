@@ -137,7 +137,7 @@ avmlib_table_init(
     /* Step 3: basic field assignments */
     this->size = 0;
     this->capacity = initial_capacity;
-    this->alloc_count = 1;  /* May be overridden by users */
+    this->alloc_count = AVMLIB_DEFAULT_TABLE_SIZE; /* May be overridden */
     this->type_name = "AnonymousTable"; /* May be overridden by users */
     this->entries = entries;
     this->add = avmlib_table_default_add;
