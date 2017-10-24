@@ -12,6 +12,8 @@
  *    + Tables may be serialized to, or deserialized from, memory.
  *    + Table entries may be added, but not removed (the data an entry
  *      refers to may be cleared, of course).  
+ *    + Table entries may be primitive values, or pointers to other 
+ *      memory.
  * */
 #ifndef _AVMLIB_TABLE_H_
 #define _AVMLIB_TABLE_H_
@@ -76,5 +78,22 @@ int avmlib_table_find_wrapper(table_t *this, intptr_t test);
 
 #define avmlib_table_find(__tbl,__test) \
     avmlib_table_find_wrapper(__tbl,(intptr_t)__test)
+
+#define avmlib_table_size(__tbl) \
+    (((table_t *)(__tbl))->size)
+
+/**************************************************************************//**
+ * @brief Determine if a key is in a table already
+ *
+ * @details
+ *
+ * @param
+ *
+ * @returns true if the table contains the key, false otherwise
+ *
+ * @remarks
+ * */
+#define avmlib_table_contains(__tbl,__test) \
+    (0 <= avmlib_table_find((__tbl),(__test)))
 
 #endif /* _AVMLIB_TABLE_H_ */

@@ -28,8 +28,8 @@ uint32_t avmm_regs_default_set(class_register_t *reg, uint32_t value);
  */
 #ifdef _AVMLIB_REGS_C_ 
 class_register_t avm_global_regs[] = {
-    { {"CLK"},REGMODE_RO,0,NULL,NULL,NULL},
-    { {"VER"},REGMODE_RO,0,NULL,NULL,NULL},
+    { {"CLK"},REGMODE_READ,0,NULL,NULL,NULL},
+    { {"VER"},REGMODE_READ,0,NULL,NULL,NULL},
     { {"GR0"},REGMODE_RW,0,NULL,NULL,NULL},
     { {"GR1"},REGMODE_RW,0,NULL,NULL,NULL},
     { {"GR2"},REGMODE_RW,0,NULL,NULL,NULL},

@@ -50,7 +50,6 @@ typedef enum {
 #define ENTITY_INVALID ((uint32_t)(0xFFFFFFFF))
 
 
-
 /**
  * Enumerate the supported opcodes
  */
@@ -119,9 +118,9 @@ typedef struct {
 
 typedef enum register_mode_e {
     REGMODE_INVALID = 0, 
-    REGMODE_RO = 0x01,
-    REGMODE_WO = 0x02,
-    REGMODE_RW = 0x03,
+    REGMODE_READ    = 0x01,
+    REGMODE_WRITE   = 0x02,
+    REGMODE_RW      = 0x03,
 
 } register_mode_t;
 
@@ -191,7 +190,7 @@ typedef struct {
 typedef struct {
     class_header_t header; /* Generic common header */
     uint32_t segment; /* Which segment this label is in */
-    uint32_t offset; /* Word offset into this segment's code */
+    uint32_t offset; /* Word offset into segment's code */
 } class_label_t;
 
 /**

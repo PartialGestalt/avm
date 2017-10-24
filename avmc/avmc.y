@@ -17,6 +17,7 @@ int yywrap()
   
 int parser_init(int argc, char **argv)
 {
+    return 0;
 } 
 
 /* Called after every attempt to inject a token into the

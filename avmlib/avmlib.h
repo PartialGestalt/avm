@@ -9,7 +9,7 @@
 #ifndef _AVMLIB_H_
 #define _AVMLIB_H_
 
-#include "avmm_data.h"
+#include "avmlib_data.h"
 #include "avmlib_regs.h"
 #include "avmlib_ports.h"
 #include "avmlib_table.h"

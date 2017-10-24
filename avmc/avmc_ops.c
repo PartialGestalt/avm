@@ -218,6 +218,8 @@ avmc_op_new(
     }
     /* Fill in */
     ni->i_ref = def;
+
+    return ni;
 }
 
 /**************************************************************************//**
@@ -245,13 +247,43 @@ avmc_class_lookup(
 }
 
 /**************************************************************************//**
- * @brief Implement compilation of a DEF instruction
+ * @brief Generic parameter resolver.
  *
  * @details
  *
  * @param
  *
  * @returns Result code indicating success or failure mode
+ *
+ * @remarks
+ * */
+int
+avmc_resolve_parameter(
+    class_segment_t *seg,
+    param_t *param,
+    int *pclass
+)
+{
+    switch(param->p_type) {
+        case PARAM_TYPE_STRING: {
+            /* Anonymous string; do we have it already? */
+#error YOU WERE HERE
+        }
+    }
+    return -1;
+}
+
+/**************************************************************************//**
+ * @brief Implement compilation of a DEF instruction
+ *
+ * @details The DEF instruction creates a symbolic reference in the AVM;
+ * it may be almost any class.  The DEF instruction creates a table entry
+ * in the tables for a program segment, but does not emit instructions in
+ * the program stream.
+ *
+ * @param
+ *
+ * @returns NULL on success, error string on error.
  *
  * @remarks
  * */
@@ -263,10 +295,19 @@ avmc_compile_def(
 {
     int class = AVM_CLASS_RESERVED;
     uint32_t classarg = AVM_CLASS_RESERVED;
+    table_t *class_table = NULL;
 
     if (!op || !seg) {
         return avmc_err_ret("Internal corruption; no active seg or op.");
     }
+
+    /*
+     *  Must have exactly 2 args
+     */
+    if (op->i_paramc != 2) {
+        return avmc_err_ret("Syntax: DEF takes two arguments: class and name.\n");
+    }
+
     /* 
      * Determine class number 
      */
@@ -277,7 +318,7 @@ avmc_compile_def(
                 /* Bad conversion */
                 return avmc_err_ret("Conversion error in DEF class.");
             }
-            if (classarg < 0 || (classarg > 255)) {
+            if (classarg >= 255) {
                 /* Bad class number */
                 return avmc_err_ret("Bad value for class.");
             }
@@ -294,8 +335,111 @@ avmc_compile_def(
         }
     }
 
-    /* Got class; get name */
+    /* Got class number; get segment class table and possible existing entry */
+    if (NULL == (class_table = AVM_CLASS_TABLE(seg,class))) {
+        return avmc_err_ret("Table lookup failure.\n");
+    }
 
+    if (avmlib_table_contains(class_table,op->i_params[1]->p_text)) {
+        return avmc_err_ret("Duplicate symbol name \"%s\".\n",
+                            op->i_params[1]->p_text);
+    }
+
+    /* Create new object and store in table */
+    switch (class) {
+        default: return avmc_err_ret("Semantics: can't define a reference in that class (\"%s\").\n", op->i_params[0]->p_text);
+        case AVM_CLASS_STRING:{
+            class_string_t *cs = avmlib_string_new(op->i_params[1]->p_text,NULL);
+            if (cs != NULL) {
+                avmlib_table_add(class_table,cs);
+            } else {
+                return avmc_err_ret("Internal error creating string object.\n");
+            }
+            break;
+        }
+    }
+
+    return NULL;
+}
+
+/**************************************************************************//**
+ * @brief Implement compilation of a STOR instruction
+ *
+ * @details The STOR instruction puts something into something else. It is
+ * more flexible than a simple register store, in that it can take multiple
+ * arguments, and handles formatting or storage as appropriate for the
+ * target object class.  
+ *
+ * @param
+ *
+ * @returns NULL on success, error string on failure.
+ *
+ * @remarks Emits at least 3 entities into the instruction stream.
+ * */
+char *
+avmc_compile_stor(
+    class_segment_t *seg,
+    op_t *op
+)
+{
+    int class = AVM_CLASS_RESERVED;
+    uint32_t classarg = AVM_CLASS_RESERVED;
+    table_t *t_i = AVM_CLASS_TABLE(seg,AVM_CLASS_INSTRUCTION);
+    class_header_t *obj;
+    int obj_index = -1;
+    int pm;
+
+    if (!op || !seg) {
+        return avmc_err_ret("Internal corruption; no active seg or op.");
+    }
+    /*
+     * Must have at least 2 parameters, name and value
+     */
+    if (op->i_paramc < 2) {
+        return avmc_err_ret("Syntax: STOR requires at least a name and a value.\n");
+    }
+    /* Step 1: Emit storage op */
+    avmlib_table_add(t_i,avmlib_instruction_new(AVM_OP_STOR,0,op->i_paramc));
+
+    /* Step 2: Resolve target class and entity */
+    switch (op->i_params[0]->p_type) {
+        case PARAM_TYPE_REGISTER: {
+            table_t *t = AVM_CLASS_TABLE(seg,AVM_CLASS_REGISTER);
+            int i = avmlib_table_find(t, op->i_params[0]->p_text);
+            if (i < 0) {
+                return avmc_err_ret("Unknown register \"%s\"\n",op->i_params[0]->p_text);
+            }
+            obj = (class_header_t *)t->entries[i];
+            class = AVM_CLASS_REGISTER;
+            obj_index = i;
+            break;
+        }
+        case PARAM_TYPE_NAME: {
+            /* TODO: CLEAN: Look up from any table */
+            obj_index = avmc_resolve_param(seg,op->i_params[0],&class);
+            if (obj_index < 0) {
+                return avmc_err_ret("Couldn't resolve symbol \"%s\".\n",
+                                    op->i_params[0]->p_text);
+            }
+            avmlib_table_add(t_i,avmlib_entity_new(class,obj_index));
+            break;
+        }
+        default:
+            return avmc_err_ret("STOR: Symbol \"%s\" is not a storage location.\n",op->i_params[0]->p_text);
+    }
+    avmlib_table_add(t_i,avmlib_entity_new(class,obj_index));
+
+    /* Step 3: Resolve and encode the rest of the parameters */
+    for (pm = 1; pm < op->i_paramc ; pm++) {
+        param_t *p = op->i_params[pm];
+        obj_index = avmc_resolve_param(seg,p,&class);
+        if (obj_index < 0) {
+            return avmc_err_ret("Couldn't resolve symbol \"%s\".\n", p->p_text);
+        }
+        avmlib_table_add(t_i,avmlib_entity_new(class,obj_index));
+    }
+
+    return NULL;
 
 }
 #endif /* _AVMC_OPS_C_*/

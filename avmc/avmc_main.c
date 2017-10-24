@@ -99,12 +99,13 @@ main(
         avmc_log("PARSING: %s\n",avmc_source_file);
         yylineno = 1; /* Reset line number */
         yyin = fopen(argv[i],"r");
-        yyparse();
+        if (yyparse()) i+=99;
         if (yyin) fclose(yyin);
         free(avmc_source_file);
     }
 
-    /* Now, emit the segment as object code */
+    /* DEBUG: dump the segment */
+    avmlib_dump_seg(avm, &cur_seg);
 }
 
 /**************************************************************************//**
@@ -167,7 +168,7 @@ avmc_inst_start(
  *
  * @param
  *
- * @returns Result code indicating success or failure mode
+ * @returns NULL for success, error string on error.
  *
  * @remarks
  * */
@@ -192,6 +193,9 @@ avmc_inst_finish(void)
         case AVM_OP_DEF:{
             /* Internal */
             return avmc_compile_def(&cur_seg, cur_op);
+        }
+        case AVM_OP_STOR: {
+            return avmc_compile_stor(&cur_seg, cur_op);
         }
         default: {
             return avmc_err_ret("ERROR: Unimplemented operation \"%s\".",cur_op->i_ref->i_token);
@@ -283,7 +287,15 @@ avmc_seg_init(
     /* Generic table of tables prep */
     avmlib_table_init(&(this->tables),AVM_CLASS_MAX);
     for (i=0;i<AVM_CLASS_MAX;i++) {
-        avmlib_table_add(&(this->tables),avmlib_table_new(10));
+        /* Some tables are global in the machine vs. local */
+        switch (i) {
+            case AVM_CLASS_REGISTER:
+                avmlib_table_add(&(this->tables),AVM_CLASS_TABLE(avm,i));
+                break;
+            default:
+                avmlib_table_add(&(this->tables),avmlib_table_new(10));
+                break;
+        }
     }
 
     /* Code Stream should increment by quite a bit */

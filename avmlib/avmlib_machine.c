@@ -35,7 +35,22 @@ avmlib_machine_init(
     /* Step 2: Prepare all tables */
     avmlib_table_init(&(this->tables),AVM_CLASS_MAX);
     for (i=0;i<AVM_CLASS_MAX;i++) {
-        avmlib_table_add(&(this->tables),avmlib_table_new(32));
+        table_t *t = avmlib_table_new(32);
+        avmlib_table_add(&(this->tables),t);
+        switch(i) {
+            case AVM_CLASS_INSTRUCTION: t->type_name = "INSTRUCTION"; break;
+            case AVM_CLASS_ERROR: t->type_name = "ERROR"; break;
+            case AVM_CLASS_GROUP: t->type_name = "GROUP"; break;
+            case AVM_CLASS_REGISTER: t->type_name = "REGISTER"; break;
+            case AVM_CLASS_BUFFER: t->type_name = "BUFFER"; break;
+            case AVM_CLASS_PORT: t->type_name = "PORT"; break;
+            case AVM_CLASS_STRING: t->type_name = "STRING"; break;
+            case AVM_CLASS_LABEL: t->type_name = "LABEL"; break;
+            case AVM_CLASS_PROCESS: t->type_name = "PROCESS"; break;
+            case AVM_CLASS_NUMBER: t->type_name = "NUMBER"; break;
+            case AVM_CLASS_SEGMENT: t->type_name = "SEGMENT"; break;
+            default: t->type_name = "UNKNOWN"; break;
+        }
     }
 
     /* Step 3: Init default table entries */

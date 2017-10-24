@@ -1,5 +1,9 @@
 firstrule:all
 
+# Unless we're forcing GCC, use clang
+CC?=clang
+
+
 FLEX_SOURCES=avmc_flex.c avmc_bison.c 
 FLEX_INCLUDES=avmc_bison.h
 FLEX_OTHERS=avmc.output

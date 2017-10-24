@@ -1,5 +1,7 @@
 firstrule: all
 
+# Unless we're forcing GCC, use clang
+CC?=clang
 
 SUBDIRS=avmlib avmc avmm
 
@@ -16,6 +18,9 @@ CSCOPE_FILES=cscope.files cscope.out
 CLEANFILES=$(CSCOPE_FILES)
 
 DESCEND=@(for subdir in $(SUBDIRS); do make -C $$subdir $@ || exit; done)
+
+doc::
+	doxygen doc/avm.doxy	
 
 
 clean::

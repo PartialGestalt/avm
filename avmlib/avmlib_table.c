@@ -44,7 +44,7 @@ avmlib_table_default_add(
 
 
 /**************************************************************************//**
- * @brief Provide a default 'compare' method.
+ * @brief Provide a default 'compare' method for integers.
  *
  * @details This method compares the values as integers, which is
  * pretty much useless.  API consumers should provide a table-specific
@@ -61,7 +61,7 @@ avmlib_table_default_add(
  * comparing a key to elements within an entry.
  * */
 int
-avmlib_table_default_compare(
+avmlib_table_default_int_compare(
     table_t *this,
     entry_t entry,
     intptr_t test
@@ -69,6 +69,34 @@ avmlib_table_default_compare(
 {
     if (entry == test) return 0;
     return -1;
+}
+
+/**************************************************************************//**
+ * @brief Provide a default 'compare' method for strings.
+ *
+ * @details This method compares the values as strings, which is 
+ * pretty common for internal tables.
+ *
+ * @param this The table in which the comparison occurs
+ * @param entry An entry from the table
+ * @param test A value to use for comparison.
+ *
+ * @returns 0 if the given entry is the same as the reference, nonzero
+ * if not.
+ *
+ * @remarks Note that user functions will be less direct, typically 
+ * comparing a key to elements within an entry.
+ * */
+int
+avmlib_table_default_string_compare(
+    table_t *this,
+    entry_t entry,
+    intptr_t test
+) 
+{
+    char *ref = ((class_header_t *)entry)->symname;
+    char *chk = (char *)test;
+    return strcmp(ref,chk);
 }
 
 /**************************************************************************//**
@@ -94,7 +122,7 @@ avmlib_table_default_find(
     int i;
     
     /* Assign comparison if it hasn't been set yet */
-    if (!this->compare) this->compare = avmlib_table_default_compare;
+    if (!this->compare) this->compare = avmlib_table_default_string_compare;
 
     /* Walk list */
     for (i=0;i<this->size;i++) {
@@ -115,7 +143,7 @@ avmlib_table_default_find(
  * @param this The table to prepare
  * @param initial_capacity How many entries to initially allocate for.
  *
- * @returns Pointer to the table on succes, NULL on failure.
+ * @returns Pointer to the table on success, NULL on failure.
  * */
 table_t *
 avmlib_table_init(
@@ -141,7 +169,7 @@ avmlib_table_init(
     this->type_name = "AnonymousTable"; /* May be overridden by users */
     this->entries = entries;
     this->add = avmlib_table_default_add;
-    this->compare = avmlib_table_default_compare;
+    this->compare = avmlib_table_default_string_compare;
     this->find = avmlib_table_default_find;
     this->destroy = NULL;
 
@@ -271,6 +299,19 @@ avmlib_table_add_wrapper(
     return this->add(this,entry);
 }
 
+/**************************************************************************//**
+ * @brief Wrapper around table search
+ *
+ * @details Given a search key, search the table for that key.
+ *
+ * @param this Table to query
+ * @param test Table-specific entry to test for.
+ *
+ * @returns Index into table of search key or -1 if not found.
+ *
+ * @remarks Tables can have custom find routines, and can have custom
+ * comparison routines if using the common find.
+ * */
 int
 avmlib_table_find_wrapper(
     table_t *this,

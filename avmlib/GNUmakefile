@@ -1,5 +1,8 @@
 firstrule: all
 
+# Unless we're forcing GCC, use clang
+CC?=clang
+
 
 LIB_TOKEN=avm
 LIB_TARGET=lib$(LIB_TOKEN).a
