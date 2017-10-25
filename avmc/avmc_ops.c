@@ -266,8 +266,7 @@ avmc_resolve_parameter(
 {
     switch(param->p_type) {
         case PARAM_TYPE_STRING: {
-            /* Anonymous string; do we have it already? */
-#error YOU WERE HERE
+            /* Anonymous string; create an entry */
         }
     }
     return -1;
@@ -416,7 +415,7 @@ avmc_compile_stor(
         }
         case PARAM_TYPE_NAME: {
             /* TODO: CLEAN: Look up from any table */
-            obj_index = avmc_resolve_param(seg,op->i_params[0],&class);
+            obj_index = avmc_resolve_parameter(seg,op->i_params[0],&class);
             if (obj_index < 0) {
                 return avmc_err_ret("Couldn't resolve symbol \"%s\".\n",
                                     op->i_params[0]->p_text);
@@ -432,7 +431,7 @@ avmc_compile_stor(
     /* Step 3: Resolve and encode the rest of the parameters */
     for (pm = 1; pm < op->i_paramc ; pm++) {
         param_t *p = op->i_params[pm];
-        obj_index = avmc_resolve_param(seg,p,&class);
+        obj_index = avmc_resolve_parameter(seg,p,&class);
         if (obj_index < 0) {
             return avmc_err_ret("Couldn't resolve symbol \"%s\".\n", p->p_text);
         }

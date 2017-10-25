@@ -1,7 +1,10 @@
 firstrule:all
 
 # Unless we're forcing GCC, use clang
-CC?=clang
+ifeq ($(CC),cc)
+CC = clang
+endif
+
 
 
 FLEX_SOURCES=avmc_flex.c avmc_bison.c 
@@ -38,7 +41,7 @@ all: $(PROG)
 $(OBJS): $(SOURCES)
 
 $(PROG): $(OBJS)
-	cc -o $(PROG) $(OBJS) $(LIBS)
+	$(CC) -o $(PROG) $(OBJS) $(LIBS)
 
 
 test: all

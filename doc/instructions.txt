@@ -57,7 +57,7 @@
                              String -- Replace string contents with value of <what>
 0x03     INS        3      Insert a value at a given offset in a location. Not valid
                            for all <loc> types.
-                           (Args: <what>,<offset>,<loc>)
+                           (Args: <loc>,<offset>,<what>)
 0x04     GOTO       1      Unconditional jump to the given label.
 0x05     JZ         2      Jump to label in 2nd arg if 1st arg is zero.
                            (Args: <label>,<test>)

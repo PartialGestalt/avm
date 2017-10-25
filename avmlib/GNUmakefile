@@ -1,7 +1,10 @@
 firstrule: all
 
 # Unless we're forcing GCC, use clang
-CC?=clang
+
+ifeq ($(CC),cc)
+CC = clang
+endif
 
 
 LIB_TOKEN=avm
