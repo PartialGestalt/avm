@@ -44,17 +44,14 @@ typedef struct {
     uint32_t entity;
 } entity_map_t;
 
-/**
- * The entity_map is a map of _all_ named symbols defined
- * by this program, with associated entity coding.
- */
-static table_t entity_map;
-
 /* The segment we're constructing */
 static class_segment_t cur_seg;
 
 /* The reference machine for predefined values */
 static avm_t *avm;
+
+/* All named values. */
+table_t entity_map;
 
 /**
  * Command line options.
@@ -92,6 +89,7 @@ main(
     avm = avmlib_machine_new();
     avmc_ops_init();
     avmc_seg_init(&cur_seg);
+    cur_seg.avm = avm;
 
     /* For now, just parse all command line args as input files */
     for (i=1;(i<=(argc-1));i++) {
@@ -175,11 +173,12 @@ avmc_inst_start(
 char *
 avmc_inst_finish(void)
 {
+    int i;
 
     /* Basic checks */
     if (!cur_op) {
         /* This should never ever happen. */
-        return "ERROR: No instruction processing in progress.";
+        return avmc_err_ret("ERROR: No instruction processing in progress.");
     }
     if (cur_op->i_paramc < cur_op->i_ref->i_argc) {
         return avmc_err_ret("ERROR: Not enough parameters for operation \"%s\" (expected %d, got %d).",
@@ -280,6 +279,8 @@ avmc_seg_init(
 )
 {
     int i;
+    /* Unlinked.... */
+    this->id = AVMM_SEGMENT_UNLINKED;
     /* Internal entity map */
     avmlib_table_init(&entity_map,64);
     entity_map.compare = avmc_entity_map_compare;
@@ -287,15 +288,9 @@ avmc_seg_init(
     /* Generic table of tables prep */
     avmlib_table_init(&(this->tables),AVM_CLASS_MAX);
     for (i=0;i<AVM_CLASS_MAX;i++) {
-        /* Some tables are global in the machine vs. local */
-        switch (i) {
-            case AVM_CLASS_REGISTER:
-                avmlib_table_add(&(this->tables),AVM_CLASS_TABLE(avm,i));
-                break;
-            default:
-                avmlib_table_add(&(this->tables),avmlib_table_new(10));
-                break;
-        }
+        /* Some tables are global in the machine vs. local, but
+         * we don't really care. */
+        avmlib_table_add(&(this->tables),avmlib_table_new(10));
     }
 
     /* Code Stream should increment by quite a bit */

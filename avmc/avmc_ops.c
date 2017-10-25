@@ -96,6 +96,8 @@ struct {
     { NULL, AVM_CLASS_RESERVED}
 };
 
+/* In-process entity map from core */
+extern table_t entity_map;
 
 /**************************************************************************//**
  * @brief Comparison function to instruction definition table
@@ -255,22 +257,122 @@ avmc_class_lookup(
  *
  * @returns Result code indicating success or failure mode
  *
- * @remarks
+ * @remarks CLEAN: TODO: This should probably be in the library.
  * */
 int
 avmc_resolve_parameter(
     class_segment_t *seg,
-    param_t *param,
-    int *pclass
+    param_t *param
 )
 {
+    table_t *t;
+    int table_index;
+
+
     switch(param->p_type) {
-        case PARAM_TYPE_STRING: {
-            /* Anonymous string; create an entry */
+        case PARAM_TYPE_STRING: { /* Anonymous string literal */
+            class_string_t *obj;
+            /*
+             * CLEAN: TODO: Since these are constants, we could
+             * theoretically fold multiple references into a single
+             * entry.
+             */
+            obj = avmlib_string_new(NULL,param->p_text);
+            t = AVM_CLASS_TABLE(seg,AVM_CLASS_STRING);
+            table_index = avmlib_table_add(t,obj);
+            param->p_opcode = avmlib_entity_new(AVM_CLASS_STRING,table_index);
+            param->p_opcode |= OP_FLAG_CONSTANT;
+            break;
+        }
+        case PARAM_TYPE_NUMBER: { /* Anonymous numeric constant */
+            int64_t cvtval = 0;
+            if (0 > avmlib_getnum(param->p_text,&cvtval)) {
+                /* Error in conversion.... */
+                return -1; /* Leave errno */
+            }
+            /* Check for immediate... */
+            if (ENTITY_INVALID == 
+                (param->p_opcode = avmlib_immediate_new(cvtval))) {
+                class_number_t *obj;
+                /*
+                 * Too big for immediate, so we'll create an anonymous
+                 * entry in the numeric variable table.
+                 *
+                 * CLEAN: TODO: Since these are constants, we could
+                 * theoretically fold multiple references into a single
+                 * entry.
+                 */
+                obj = avmlib_number_new(NULL,64,cvtval);
+                t = AVM_CLASS_TABLE(seg,AVM_CLASS_NUMBER);
+                table_index = avmlib_table_add(t,obj);
+                param->p_opcode = avmlib_entity_new(AVM_CLASS_NUMBER,table_index);
+                param->p_opcode |= OP_FLAG_CONSTANT;
+            }
+            break;
+        }
+        case PARAM_TYPE_REGISTER: {
+            /* Registers MUST exist */
+            t = AVM_CLASS_TABLE(seg->avm,AVM_CLASS_REGISTER);
+            table_index = avmlib_table_find(t,param->p_text);
+                /* Not found? */
+            if (table_index < 0) return -1;
+            param->p_opcode = avmlib_entity_new(AVM_CLASS_REGISTER,table_index);
+            return 0;
+        }
+        case PARAM_TYPE_NAME: {
+            /* Reference by name.  Do we have it already? */
+            table_index = avmlib_table_find(&entity_map,param->p_text);
+            if (table_index >= 0) {
+                /* Found it.  Copy from cache */
+                param->p_opcode = (entity_t)(&entity_map)->entries[table_index];
+            } else {
+                class_unresolved_t *obj;
+            /* Not found?  Create an unresolved reference */
+                obj = avmlib_unresolved_new(param->p_text);
+                t = AVM_CLASS_TABLE(seg,AVM_CLASS_UNRESOLVED);
+                table_index = avmlib_table_add(t,obj);
+                param->p_opcode = avmlib_entity_new(AVM_CLASS_UNRESOLVED,table_index);
+            }
+            break;
+        }
+        case PARAM_TYPE_CLASS: {
+            /* Class?  Just create a class entity */
+            param->p_opcode = avmlib_entity_new(avmc_class_lookup(param->p_text),0);
+            break;
         }
     }
-    return -1;
+    return 0;
 }
+
+/**************************************************************************//**
+ * @brief Convenience routine to resolve all parameters in an op
+ *
+ * @details
+ *
+ * @param
+ *
+ * @returns NULL on success, error string on failure.
+ *
+ * @remarks
+ * */
+char *
+avmc_resolve_op_parameters(
+    class_segment_t *seg,
+    op_t *op
+)
+{
+    int i;
+
+    /* Resolve all parameters to entities */
+    for (i=0;i<op->i_paramc;i++) {
+        if (0 > avmc_resolve_parameter(seg,op->i_params[i])) {
+            return avmc_err_ret("Cannot process parameter \"%s\".\n",
+                                op->i_params[i]->p_text);
+        }
+    }
+    return NULL;
+}
+
 
 /**************************************************************************//**
  * @brief Implement compilation of a DEF instruction
@@ -280,7 +382,8 @@ avmc_resolve_parameter(
  * in the tables for a program segment, but does not emit instructions in
  * the program stream.
  *
- * @param
+ * @param seg The segment we're building
+ * @param op The operation
  *
  * @returns NULL on success, error string on error.
  *
@@ -292,9 +395,9 @@ avmc_compile_def(
     op_t *op
 )
 {
-    int class = AVM_CLASS_RESERVED;
-    uint32_t classarg = AVM_CLASS_RESERVED;
-    table_t *class_table = NULL;
+    param_t *param;
+    int table_index;
+    int class;
 
     if (!op || !seg) {
         return avmc_err_ret("Internal corruption; no active seg or op.");
@@ -307,57 +410,43 @@ avmc_compile_def(
         return avmc_err_ret("Syntax: DEF takes two arguments: class and name.\n");
     }
 
-    /* 
-     * Determine class number 
+    /*
+     * First arg MUST be class
      */
-    switch(op->i_params[0]->p_type) {
-        case PARAM_TYPE_NUMBER: {
-            /* Convert numeric */
-            if (0 == avmlib_getnum(op->i_params[0]->p_text,&classarg)) {
-                /* Bad conversion */
-                return avmc_err_ret("Conversion error in DEF class.");
-            }
-            if (classarg >= 255) {
-                /* Bad class number */
-                return avmc_err_ret("Bad value for class.");
-            }
-            class = (int)(classarg & 0xFF);
-            break;
-        }
-        case PARAM_TYPE_CLASS: {
-            /* Lookup string */
-            class = avmc_class_lookup(op->i_params[0]->p_text);
-            break;
-        }
-        default: {
-            return avmc_err_ret("Syntax: first parameter must be storage class name or value.");
+    param = op->i_params[0];
+    if (param->p_type != PARAM_TYPE_CLASS) {
+        return avmc_err_ret("Syntax: First paramet must be a class name.\n");
+    } else {
+        class = avmc_class_lookup(param->p_text);
+        if (class == AVM_CLASS_RESERVED) {
+            return avmc_err_ret("Bad class \"%s\".\n", param->p_text);
         }
     }
 
-    /* Got class number; get segment class table and possible existing entry */
-    if (NULL == (class_table = AVM_CLASS_TABLE(seg,class))) {
-        return avmc_err_ret("Table lookup failure.\n");
-    }
-
-    if (avmlib_table_contains(class_table,op->i_params[1]->p_text)) {
-        return avmc_err_ret("Duplicate symbol name \"%s\".\n",
-                            op->i_params[1]->p_text);
+    /* 
+     * Second arg must not already be defined.
+     */
+    param = op->i_params[1];
+    if (avmlib_table_contains(&entity_map,param->p_text)) {
+        return avmc_err_ret("Duplicate symbol \"%s\".\n",param->p_text);
     }
 
     /* Create new object and store in table */
     switch (class) {
         default: return avmc_err_ret("Semantics: can't define a reference in that class (\"%s\").\n", op->i_params[0]->p_text);
         case AVM_CLASS_STRING:{
-            class_string_t *cs = avmlib_string_new(op->i_params[1]->p_text,NULL);
+            class_string_t *cs = avmlib_string_new(param->p_text,NULL);
             if (cs != NULL) {
-                avmlib_table_add(class_table,cs);
+                /* String table */
+                avmlib_table_add(AVM_CLASS_TABLE(seg,AVM_CLASS_STRING),cs);
+                /* Overall tracking */
+                avmlib_table_add(&entity_map,param->p_text);
             } else {
                 return avmc_err_ret("Internal error creating string object.\n");
             }
             break;
         }
     }
-
     return NULL;
 }
 
@@ -381,61 +470,50 @@ avmc_compile_stor(
     op_t *op
 )
 {
-    int class = AVM_CLASS_RESERVED;
-    uint32_t classarg = AVM_CLASS_RESERVED;
-    table_t *t_i = AVM_CLASS_TABLE(seg,AVM_CLASS_INSTRUCTION);
-    class_header_t *obj;
-    int obj_index = -1;
-    int pm;
+    char *stor_err;
+    param_t *param;
+    int i;
+    table_t *t_i;
 
     if (!op || !seg) {
         return avmc_err_ret("Internal corruption; no active seg or op.");
     }
+
     /*
-     * Must have at least 2 parameters, name and value
+     * Must have at least 2 parameters, name and value (may have more)
      */
     if (op->i_paramc < 2) {
         return avmc_err_ret("Syntax: STOR requires at least a name and a value.\n");
     }
+
+    /* 
+     * Try to resolve all parameters
+     */
+    stor_err = avmc_resolve_op_parameters(seg,op);
+    if (stor_err != NULL) return stor_err;
+
+
     /* Step 1: Emit storage op */
+    t_i = AVM_CLASS_TABLE(seg,AVM_CLASS_INSTRUCTION);
     avmlib_table_add(t_i,avmlib_instruction_new(AVM_OP_STOR,0,op->i_paramc));
 
-    /* Step 2: Resolve target class and entity */
-    switch (op->i_params[0]->p_type) {
-        case PARAM_TYPE_REGISTER: {
-            table_t *t = AVM_CLASS_TABLE(seg,AVM_CLASS_REGISTER);
-            int i = avmlib_table_find(t, op->i_params[0]->p_text);
-            if (i < 0) {
-                return avmc_err_ret("Unknown register \"%s\"\n",op->i_params[0]->p_text);
-            }
-            obj = (class_header_t *)t->entries[i];
-            class = AVM_CLASS_REGISTER;
-            obj_index = i;
+    /* Step 2: Validate target class and entity */
+    param = op->i_params[0];
+    switch (avmlib_entity_class(param->p_opcode)) {
+        case AVM_CLASS_REGISTER:
+        case AVM_CLASS_STRING:
+        case AVM_CLASS_NUMBER:
+            /* Good to go. Emit the opcode */
+            avmlib_table_add(t_i,param->p_opcode);
             break;
-        }
-        case PARAM_TYPE_NAME: {
-            /* TODO: CLEAN: Look up from any table */
-            obj_index = avmc_resolve_parameter(seg,op->i_params[0],&class);
-            if (obj_index < 0) {
-                return avmc_err_ret("Couldn't resolve symbol \"%s\".\n",
-                                    op->i_params[0]->p_text);
-            }
-            avmlib_table_add(t_i,avmlib_entity_new(class,obj_index));
-            break;
-        }
         default:
-            return avmc_err_ret("STOR: Symbol \"%s\" is not a storage location.\n",op->i_params[0]->p_text);
+            return avmc_err_ret("STOR: Symbol \"%s\" is not a valid storage location.\n",op->i_params[0]->p_text);
     }
-    avmlib_table_add(t_i,avmlib_entity_new(class,obj_index));
 
-    /* Step 3: Resolve and encode the rest of the parameters */
-    for (pm = 1; pm < op->i_paramc ; pm++) {
-        param_t *p = op->i_params[pm];
-        obj_index = avmc_resolve_parameter(seg,p,&class);
-        if (obj_index < 0) {
-            return avmc_err_ret("Couldn't resolve symbol \"%s\".\n", p->p_text);
-        }
-        avmlib_table_add(t_i,avmlib_entity_new(class,obj_index));
+    /* Step 3: Simple encode of the remaining parameters */
+    for (i=1;i<op->i_paramc;i++) {
+        param = op->i_params[i];
+        avmlib_table_add(t_i,param->p_opcode);
     }
 
     return NULL;

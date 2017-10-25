@@ -21,6 +21,6 @@ static inline int avmlib_digitval(char c) {
 }
 
 /* Prototypes */
-int avmlib_getnum(char *str, uint32_t *num);
+int avmlib_getnum(char *str, int64_t *num);
 
 #endif /* _AVMLIB_UTILS_H_ */

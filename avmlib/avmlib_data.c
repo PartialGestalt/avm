@@ -36,6 +36,35 @@ avmlib_instruction_new(
            (argc);
 }
 
+
+/**************************************************************************//**
+ * @brief Create a new immediate number entity
+ *
+ * @param val The value to encode
+ *
+ * @returns New entity on success, ENTITY_INVALID on failure
+ *
+ * @remarks
+ * */
+entity_t 
+avmlib_immediate_new(
+    int64_t val
+)
+{
+    int64_t v = val;
+    uint32_t code = (AVM_CLASS_IMMEDIATE << 24);
+
+    if (v < 0) {
+        v = -v;
+        code |= (1<<20);
+    }
+    if (v > 0xFFFFF)  return ENTITY_INVALID;
+
+    code |= (uint32_t)(v & 0xFFFFF);
+
+    return (entity_t)code; 
+}
+
 /**************************************************************************//**
  * @brief Common non-instruction entity creator
  *
@@ -60,6 +89,30 @@ avmlib_entity_new(
 }
 
 /**************************************************************************//**
+ * @brief Create an unresolved reference
+ *
+ * @details
+ *
+ * @param
+ *
+ * @returns New register object on success, NULL on failure.
+ *
+ * @remarks
+ * */
+class_unresolved_t *
+avmlib_unresolved_new(
+    char *name
+)
+{
+    /* Base declaration/alloc */
+    class_unresolved_t *obj = calloc(1,sizeof(*obj));
+    if (NULL == obj) return NULL;
+
+    strncpy(obj->header.symname, name, sizeof(obj->header.symname));
+    return obj;
+}
+
+/**************************************************************************//**
  * @brief Create a register object from parameters
  *
  * @details
@@ -81,7 +134,7 @@ avmlib_register_new(
 )
 {
     /* Base declaration/alloc */
-    class_register_t *obj = calloc(1,sizeof(class_register_t));
+    class_register_t *obj = calloc(1,sizeof(*obj));
     if (NULL == obj) return NULL;
 
     strncpy(obj->header.symname, name, sizeof(obj->header.symname));
@@ -111,7 +164,7 @@ avmlib_string_new(
 )
 {
     /* Base declaration/alloc */
-    class_string_t *obj = calloc(1,sizeof(class_string_t));
+    class_string_t *obj = calloc(1,sizeof(*obj));
     char *val = strdup(value!=NULL?value:"");
     if ((NULL == obj) || (NULL == val)) {
         if (NULL != obj) free(obj);
@@ -123,6 +176,37 @@ avmlib_string_new(
     strncpy(obj->header.symname, name, sizeof(obj->header.symname));
     obj->text = val;
     obj->capacity = strlen(val);
+    return obj;
+}
+
+/**************************************************************************//**
+ * @brief Create a numeric object from parameters
+ *
+ * @details
+ *
+ * @param name The name of this object.  If NULL, this is an anonymous constant
+ * @param value The value for this object.
+ *
+ * @returns New numeric object on success, NULL on failure.
+ *
+ * @remarks
+ * */
+class_number_t *
+avmlib_number_new(
+    char *name,
+    int width,
+    int64_t value
+)
+{
+    /* Base declaration/alloc */
+    class_number_t *obj = calloc(1,sizeof(*obj));
+
+    /* Save name */
+    if (NULL != name) {
+        strncpy(obj->header.symname, name, sizeof(obj->header.symname));
+    }
+    obj->bitwidth = width;
+    obj->value = value;
     return obj;
 }
 

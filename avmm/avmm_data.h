@@ -37,6 +37,7 @@ typedef enum {
     AVM_CLASS_NUMBER = 0x09, /* A numeric reference (basically an 'int' variable) */
     AVM_CLASS_IMMEDIATE = 0x0A, /* Lower 16 bits are an immediate value. */
     AVM_CLASS_SEGMENT = 0x0B, /* A program segment */
+    AVM_CLASS_UNRESOLVED = 0x0C, /* Unresolved marker */
 
     AVM_CLASS_RESERVED = 0xFF /* System-reserved values */
 } avm_class_e; 
@@ -123,7 +124,6 @@ typedef enum register_mode_e {
     REGMODE_RW      = 0x03,
 
 } register_mode_t;
-
 /**
  * Storage for a register entity
  *
@@ -208,17 +208,23 @@ typedef struct {
 typedef struct {
     class_header_t header; /* Generic common header */
     uint32_t bitwidth;
-    uint32_t lo_bits;
-    uint32_t hi_bits;
+    int64_t value;
 } class_number_t;
 
 /**
- * Storage for a program segment
+ * Supported entity flags
+ *
+ * These should all be 32-bit values suitable for ORing into
+ * an exiting entity.
+ */
+#define OP_FLAG_CONSTANT ((uint32_t)0x00C00000)
+
+/**
+ * Storage for an unresolved reference.
  */
 typedef struct {
-    class_header_t header; /* Generic common header */
-    table_t tables; /* Table of tables */
-} class_segment_t;
+    class_header_t header;
+} class_unresolved_t;
 
 /**
  * Storage for a virtual machine
@@ -229,6 +235,17 @@ typedef struct {
     entity_t entrypoint; /* Segment entrypoint */
 } avm_t;
 
+/**
+ * Storage for a program segment
+ */
+typedef struct {
+    class_header_t header; /* Generic common header */
+    table_t tables; /* Table of tables */
+    uint8_t id; /* Segment number */
+    avm_t *avm; /* Machine we're building for */
+} class_segment_t;
+
+#define AVMM_SEGMENT_UNLINKED ((uint8_t)(0xFF))
 
 #define avmm_entity_name(__entity) \
     ((class_header_t *)__entity)->symname

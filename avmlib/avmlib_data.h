@@ -19,6 +19,7 @@ void avmlib_dump_seg(avm_t *avm, class_segment_t *seg);
 /* Entity operations */
 entity_t avmlib_instruction_new(avm_opcode_t op, uint8_t flags, uint8_t argc);
 entity_t avmlib_entity_new(avm_class_e class, int table_index);
+entity_t avmlib_immediate_new(int64_t val);
 
 /* Object operations */
 class_register_t *avmlib_register_new(char *name, 
@@ -29,5 +30,12 @@ class_register_t *avmlib_register_new(char *name,
                                       uint32_t (*set)(class_register_t *,uint32_t value));
 
 class_string_t *avmlib_string_new(char *name, char *value);
+class_number_t *avmlib_number_new(char *name, int width, int64_t value);
+class_unresolved_t *avmlib_unresolved_new(char *name);
+
+/**
+ * @brief Decode the class of a given entity.
+ */
+#define avmlib_entity_class(__e) ((((uint32_t)(__e)) >> 24) & 0xFF)
 
 #endif /* _AVMLIB_DATA_H_ */
