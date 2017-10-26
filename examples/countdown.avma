@@ -18,6 +18,7 @@
 ; Test
 	JZ GR0,exit   ; Are we at zero yet? (No label definition yet, but that's ok)
 
+; Decrement.
 	SUB GR0,1,GR0 ; Decrement by subtracting 1.
 	GOTO checkit  ; Loop back	
 

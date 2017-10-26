@@ -24,4 +24,8 @@ char *avmlib_compile_jmp(class_segment_t *seg, op_t *op);
 char *avmlib_compile_jz(class_segment_t *seg, op_t *op);
 char *avmlib_compile_jnz(class_segment_t *seg, op_t *op);
 
+/* MATH */
+char *avmlib_compile_add(class_segment_t *seg, op_t *op);
+char *avmlib_compile_sub(class_segment_t *seg, op_t *op);
+
 #endif /* _AVMLIB_OBJECT_H_ */
