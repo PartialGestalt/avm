@@ -1,5 +1,7 @@
 {
     "files.exclude" : {
-        "avmc/avmc": true
+        "avmc/avmc": true,
+        "**/*.o": true,
+        "**/*.a": true
     }
 }
