@@ -10,6 +10,7 @@
 #ifndef _AVMM_PORTS_H_
 #define _AVMM_PORTS_H_
 
+#include <stdio.h>
 #include "avmm_data.h"
 
 /**
@@ -23,7 +24,11 @@ void avmm_ports_init(avm_t *avm);
  */
 #ifdef _AVMLIB_PORTS_C_ 
 class_port_t avm_global_ports[] = {
-    {{"\0"},NULL,-1,NULL},
+    //{{"@stdin"},NULL,0,NULL,NULL,NULL,NULL},
+    //{{"@stdout"},NULL,1,NULL,NULL,NULL,NULL},
+    //{{"@stderr"},NULL,2,NULL,NULL,NULL,NULL},
+        // stdin/stdout/stderr are handled directly in init() 
+    {{"\0"},NULL,-1,NULL,NULL,NULL,NULL},
 };
 #else
 extern class_port_t avm_global_ports[];

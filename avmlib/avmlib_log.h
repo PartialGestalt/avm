@@ -27,17 +27,15 @@
  * To turn on debugging, define AVM_DEBUG in your build.
  * To modify the debug level, define AVM_DEBUG_LEVEL in your build.
  */
-
-#ifdef AVM_DEBUG
 #ifndef AVM_DEBUG_LEVEL 
 #define AVM_DEBUG_LEVEL 3
 #endif /* AVM_DEBUG_LEVEL */
+
 #ifdef _AVMLIB_LOG_C_
 int avmlib_debug_level = AVM_DEBUG_LEVEL;
 #else /* _AVMLIB_LOG_C_ */
 extern int avmlib_debug_level;
 #endif /* _AVMLIB_LOG_C_ */
-#endif /* AVM_DEBUG */
 
 /*
  * Output targets
@@ -50,6 +48,24 @@ extern FILE *avmlib_errfile;
  */
 FILE *avmlib_log_set_log(FILE *newtarget);
 FILE *avmlib_log_set_err(FILE *newtarget);
+
+
+#ifdef AVM_DEBUG
+#define avm_set_debuglevel(__lvl) \
+    do { \
+        avmlib_debug_level = (__lvl); \
+    } while (0)
+
+#define avm_dbg(__lvl, __token, __format_and_args...) \
+    do { \
+        if (avmlib_debug_level >= (__lvl)) { \
+            fprintf(avmlib_logfile?avmlib_logfile:stdout, __token ": DEBUG: " __format_and_args); \
+        } \
+    } while (0)
+#else
+#define avm_set_debuglevel(__lvl)
+#define avm_dbg(__lvl, __token, __format_and_args...)
+#endif /* AVM_DEBUG */
 
 #define avm_log(__token, __format_and_args...) \
     fprintf(avmlib_logfile?avmlib_logfile:stdout, __token ": " __format_and_args)

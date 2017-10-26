@@ -37,7 +37,7 @@ avmlib_port_compare(
     char *testpath = (char *)test;
     class_port_t *testport = (class_port_t *)left;
 
-    if ((testport->path) && (testpath) && !strcmp(testport->path,testpath)) return 0;
+    if ((testpath) && !strcmp(avmm_entity_name(testport),testpath)) return 0;
     return -1;
 }
 
@@ -108,7 +108,7 @@ avmlib_ports_init(
         avmlib_err("%s: Alloc failure.\n",__func__);
         return;
     } else {
-        sprintf(avmm_entity_name(newport),"@in");
+        sprintf(avmm_entity_name(newport),"@stdin");
         newport->path = NULL;
         newport->fd = 0;
         newport->file = stdin;
@@ -118,7 +118,7 @@ avmlib_ports_init(
         avmlib_err("%s: Alloc failure.\n",__func__);
         return;
     } else {
-        sprintf(avmm_entity_name(newport),"@out");
+        sprintf(avmm_entity_name(newport),"@stdout");
         newport->path = NULL;
         newport->fd = 1;
         newport->file = stdout;
@@ -128,7 +128,7 @@ avmlib_ports_init(
         avmlib_err("%s: Alloc failure.\n",__func__);
         return;
     } else {
-        sprintf(avmm_entity_name(newport),"@err");
+        sprintf(avmm_entity_name(newport),"@stderr");
         newport->path = NULL;
         newport->fd = 2;
         newport->file = stderr;

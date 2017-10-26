@@ -29,7 +29,7 @@ typedef enum {
     PARAM_TYPE_NUMBER, /* Numeric constant */
     PARAM_TYPE_CLASS,  /* Name of a datatype class */
     PARAM_TYPE_REGISTER, /* Known register name */
-
+    PARAM_TYPE_PORT, /* Known port name */
 } param_type_t;
 
 /* A full parameter instance */

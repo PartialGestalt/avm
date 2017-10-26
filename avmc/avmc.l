@@ -12,6 +12,7 @@
 Structural bits
 */
 %}
+@[a-zA-Z]([a-zA-Z0-9])* { return PORT; }
 ;.*     return SEMICOLON; 
 ,       return COMMA;
 ["]([^"]|\\.)*["]     { return STRING; }

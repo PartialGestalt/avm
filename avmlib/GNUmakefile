@@ -12,7 +12,7 @@ LIB_TARGET=lib$(LIB_TOKEN).a
 LIB_SRCS=$(wildcard avmlib_*.c)
 LIB_OBJS=$(LIB_SRCS:.c=.o)
 
-LIB_CFLAGS=-fPIC -I../avmm -I../avmlib
+LIB_CFLAGS=-fPIC -I../avmm -I../avmlib -I../avmc
 LIB_LDFLAGS=
 
 DEBUG_CFLAGS=-g

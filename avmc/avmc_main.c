@@ -19,8 +19,8 @@
 #include <getopt.h>
 
 #include "avmc.h"
-#include "avmc_ops.h"
 #include "avmlib.h"
+#include "avmc_ops.h"
 
 /* Convenience logging */
 #define avmc_log(__format_and_args...) \
@@ -37,12 +37,6 @@ char *avmc_object_file = NULL; /* Output */
 
 /* Globals */
 static op_t *cur_op = NULL; 
-
-/* Named parameters */
-typedef struct {
-    char *name;
-    uint32_t entity;
-} entity_map_t;
 
 /* The segment we're constructing */
 static class_segment_t cur_seg;
@@ -187,21 +181,12 @@ avmc_inst_finish(void)
                             cur_op->i_paramc);
     }
 
-    /* Switch on opcode */
-    switch (cur_op->i_ref->i_opcode) {
-        case AVM_OP_DEF:{
-            /* Internal */
-            return avmc_compile_def(&cur_seg, cur_op);
-        }
-        case AVM_OP_STOR: {
-            return avmc_compile_stor(&cur_seg, cur_op);
-        }
-        default: {
-            return avmc_err_ret("ERROR: Unimplemented operation \"%s\".",cur_op->i_ref->i_token);
-            break;
-        }
-    }
-    return NULL;
+    /* Compile! */
+    if (NULL != cur_op->i_ref->i_compile) {
+        return cur_op->i_ref->i_compile(&cur_seg,cur_op);
+    } 
+
+    return avmc_err_ret("ERROR: Unimplemented operation \"%s\".",cur_op->i_ref->i_token);
 }
 
 /**************************************************************************//**

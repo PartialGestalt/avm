@@ -15,12 +15,12 @@
 
 
 /* Basic canonical definition of an instruction */
+struct op_s;
 typedef struct opdef_s {
     char *i_token; /* Canonical name */
     uint32_t i_opcode; /* The 32-bit opcode */
     uint32_t i_argc; /* Minimum # of args */
-    struct op_s *(*i_create)(struct opdef_s*); /* Create new */
-    char *(*i_validate)(struct opdef_s*, struct op_s *op); /* Validate */
+    char *(*i_compile)(class_segment_t *seg, struct op_s *op); /* Compile */
 } opdef_t;
 
 /* A full instruction instance during parsing/compilation. */
@@ -32,6 +32,11 @@ typedef struct op_s {
     param_t *i_params[64]; /* Most possible params */
 } op_t;
 
+/* Cache of encountered names */
+typedef struct {
+    char *name;
+    uint32_t entity;
+} entity_map_t;
 
 /**
  * Prototypes for op metaprocessing

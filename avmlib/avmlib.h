@@ -16,6 +16,7 @@
 #include "avmlib_machine.h"
 #include "avmlib_log.h"
 #include "avmlib_utils.h"
+#include "avmlib_object.h"
 
 #define avmlib_log(__format_and_args...) \
     avm_log("AVMLIB", __format_and_args)

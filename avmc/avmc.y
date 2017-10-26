@@ -40,7 +40,7 @@ int parser_result(char *result_string, int line_offset)
 %define parse.error verbose
 %define api.pure
 %locations
-%token INSTRUCTION ALIAS CLASS DEF REGISTER /* mnemonics */
+%token INSTRUCTION ALIAS CLASS DEF REGISTER PORT /* mnemonics */
 %token NEWLINE SEMICOLON COMMA WORD NUM STRING /* others */
 
 %start INPUT
@@ -61,6 +61,7 @@ LINE:
     | MNEMONIC ARGS LINETERM { if (parser_result(avmc_inst_finish(),1)) YYERROR;}
     | DEFINE CLASSARG ARGS LINETERM { if (parser_result(avmc_inst_finish(),1)) YYERROR;}
     | DEFINE CLASSARG COMMA ARGS LINETERM { if (parser_result(avmc_inst_finish(),1)) YYERROR;}
+    | WORD  {if (parser_result(avmc_inst_start(yytext,avmc_source_file,yylineno),0)) YYERROR;}
     ;
 
 CLASSARG:
@@ -91,5 +92,6 @@ ARG:
     | NUM {if (parser_result(avmc_inst_param(PARAM_TYPE_NUMBER, yytext),0)) YYERROR;}
     | STRING {if (parser_result(avmc_inst_param(PARAM_TYPE_STRING, yytext),0)) YYERROR;}
     | REGISTER {if (parser_result(avmc_inst_param(PARAM_TYPE_REGISTER, yytext),0)) YYERROR;}
+    | PORT {if (parser_result(avmc_inst_param(PARAM_TYPE_PORT, yytext),0)) YYERROR;}
     ;
 %%

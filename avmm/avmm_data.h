@@ -25,6 +25,7 @@ typedef uint32_t entity_t;
  * 32-bit entity value.
  */
 typedef enum {
+    AVM_CLASS_RESERVED = 0xFF, /* System-reserved values */
     AVM_CLASS_INSTRUCTION = 0x00, /* Basic OP */
     AVM_CLASS_ERROR = 0x01, /* Errors/exceptions */
     AVM_CLASS_GROUP = 0x02, /* Grouping of other elements */
@@ -38,11 +39,10 @@ typedef enum {
     AVM_CLASS_IMMEDIATE = 0x0A, /* Lower 16 bits are an immediate value. */
     AVM_CLASS_SEGMENT = 0x0B, /* A program segment */
     AVM_CLASS_UNRESOLVED = 0x0C, /* Unresolved marker */
+    AVM_CLASS_MAX
 
-    AVM_CLASS_RESERVED = 0xFF /* System-reserved values */
 } avm_class_e; 
 
-#define AVM_CLASS_MAX AVM_CLASS_SEGMENT+1
 
 /**
  * From the AVM_CLASS_RESERVED, some entities have 
@@ -161,11 +161,18 @@ typedef struct {
  *
  * CLEAN: TODO: Flesh this out more.
  */
-typedef struct {
+typedef struct _class_port_s {
     class_header_t header; /* Generic common header */
-    char *path; /* File path, if meaningful */
+    /* Base values for common case */
+    char *path; /* Reference path, if meaningful */
     int fd; /* File descriptor */
     FILE *file; /* File pointer */
+    /* Generic reset/flush */
+    int (*reset)(struct _class_port_s *port);
+    /* If a port can be read, assign a getter */
+    int (*read)(struct _class_port_s *port, void *buffer, int size);
+    /* If a port can be written, assign a setter */
+    int (*write)(struct _class_port_s *port, void *buffer, int size);
 } class_port_t;
 
 /**
@@ -189,8 +196,8 @@ typedef struct {
  */
 typedef struct {
     class_header_t header; /* Generic common header */
-    uint32_t segment; /* Which segment this label is in */
-    uint32_t offset; /* Word offset into segment's code */
+    uint8_t segment; /* Which segment this label references */
+    uint32_t offset; /* Instruction offset into reference segment's code */
 } class_label_t;
 
 /**
@@ -245,6 +252,13 @@ typedef struct {
     avm_t *avm; /* Machine we're building for */
 } class_segment_t;
 
+/**
+ * @brief Segment ID of the machine itself (globals)
+ */
+#define AVMM_SEGMENT_GLOBAL ((uint8_t)(0))
+/**
+ * @brief Segment ID of the local segment.
+ */
 #define AVMM_SEGMENT_UNLINKED ((uint8_t)(0xFF))
 
 #define avmm_entity_name(__entity) \

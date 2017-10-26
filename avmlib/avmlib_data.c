@@ -12,6 +12,7 @@
 #include "avmlib_data.h"
 
 
+
 /**************************************************************************//**
  * @brief Create a new instruction entity from components.
  *
@@ -256,13 +257,13 @@ avmlib_dump_seg(
     printf("CODE: \n");
     ti = AVM_CLASS_TABLE(seg,AVM_CLASS_INSTRUCTION);
     for (i=0;i<avmlib_table_size(ti);i++) {
-        printf("%08X ",(uint32_t)ti->entries[i]);
         if (i && !(i%4)) { 
             printf("   ");
             if (!(i%8)) {
                 printf("\n");
             }
         }
+        printf("%08X ",(uint32_t)ti->entries[i]);
     }
 
     printf("\n");

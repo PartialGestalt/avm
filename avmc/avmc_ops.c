@@ -9,10 +9,14 @@
 #ifndef _AVMC_OPS_C_
 #define _AVMC_OPS_C_
 
+#define AVM_DEBUG
+
+
 #include <stdlib.h>
 #include "avmc_ops.h"
 #include "avmm_data.h"
 #include "avmlib.h"
+
 
 /**
  * NOTE: The actual coding of an opcode is a big-endian 32-bit value, 
@@ -34,37 +38,37 @@
 opdef_t avmc_op_canon[] = {
     /* TOKEN, OPCODE, minimum ARGC, factory, validator */
         /* Internal compiler bits */
-    {"DEF",AVM_OP_DEF,2,NULL,NULL},
-    {"SIZE",AVM_OP_SIZE,3,NULL,NULL},
+    {"DEF",AVM_OP_DEF,2,avmc_compile_def},
+    {"SIZE",AVM_OP_SIZE,3,NULL},
         /* Structural ops */
-    {"NOP",AVM_OP_NOP,0,NULL,NULL}, 
-    {"STOR",AVM_OP_STOR,2,NULL,NULL},
-    {"INS",AVM_OP_INS,3,NULL,NULL},
-    {"GOTO",AVM_OP_GOTO,1,NULL,NULL},
-    {"JZ",AVM_OP_JZ,2,NULL,NULL},
-    {"JNZ",AVM_OP_JNZ,2,NULL,NULL},
-    {"FORK",AVM_OP_FORK,1,NULL,NULL},
-    {"KILL",AVM_OP_KILL,1,NULL,NULL},
-    {"PUSH",AVM_OP_PUSH,1,NULL,NULL},
-    {"POP",AVM_OP_POP,1,NULL,NULL},
-    {"LABEL",AVM_OP_LABEL,1,NULL,NULL},
+    {"NOP",AVM_OP_NOP,0,NULL}, 
+    {"STOR",AVM_OP_STOR,2,avmc_compile_stor},
+    {"INS",AVM_OP_INS,3,NULL},
+    {"GOTO",AVM_OP_GOTO,1,NULL},
+    {"JZ",AVM_OP_JZ,2,NULL},
+    {"JNZ",AVM_OP_JNZ,2,NULL},
+    {"FORK",AVM_OP_FORK,1,NULL},
+    {"KILL",AVM_OP_KILL,1,NULL},
+    {"PUSH",AVM_OP_PUSH,1,NULL},
+    {"POP",AVM_OP_POP,1,NULL},
+    {"LABEL",AVM_OP_LABEL,1,avmlib_compile_label},
 
         /* Arithmetic ops */
-    {"ADD",AVM_OP_ADD,3,NULL,NULL},
-    {"SUB",AVM_OP_SUB,3,NULL,NULL},
-    {"MUL",AVM_OP_MUL,3,NULL,NULL},
-    {"DIV",AVM_OP_DIV,3,NULL,NULL},
-    {"POW",AVM_OP_POW,3,NULL,NULL},
-    {"OR",AVM_OP_OR,3,NULL,NULL},
-    {"AND",AVM_OP_AND,3,NULL,NULL},
-    {"CMP",AVM_OP_CMP,3,NULL,NULL},
-    {"INC",AVM_OP_INC,1,NULL,NULL},
-    {"DEC",AVM_OP_DEC,1,NULL,NULL},
+    {"ADD",AVM_OP_ADD,3,NULL},
+    {"SUB",AVM_OP_SUB,3,NULL},
+    {"MUL",AVM_OP_MUL,3,NULL},
+    {"DIV",AVM_OP_DIV,3,NULL},
+    {"POW",AVM_OP_POW,3,NULL},
+    {"OR",AVM_OP_OR,3,NULL},
+    {"AND",AVM_OP_AND,3,NULL},
+    {"CMP",AVM_OP_CMP,3,NULL},
+    {"INC",AVM_OP_INC,1,NULL},
+    {"DEC",AVM_OP_DEC,1,NULL},
 
         /* I/O ops */
-    {"FILE",AVM_OP_FILE,2,NULL,NULL},
-    {"IN",AVM_OP_IN,3,NULL,NULL},
-    {"OUT",AVM_OP_OUT,3,NULL,NULL},
+    {"FILE",AVM_OP_FILE,2,NULL},
+    {"IN",AVM_OP_IN,2,NULL},
+    {"OUT",AVM_OP_OUT,2,NULL},
     {NULL} /* Mark end */
 };
 
@@ -185,13 +189,8 @@ avmc_op_validate(
     op_t *op
 ) {
     char *errstr = NULL;
-    /* Step 1: If the op has a custom validator, use it. */
-    if (def->i_validate) { 
-        errstr = def->i_validate(def,op);
-        if (errstr) return errstr;
-    }
 
-    /* Step 2: Otherwise, do generic checks... */
+    /* Generic checks... */
     if (op->i_paramc < def->i_argc) {
         /* Too few parameters */
         sprintf(avmc_errstr,"ERROR: OP %s expects %d parameters; only %d provided.\n",
@@ -211,10 +210,8 @@ avmc_op_new(
 )
 {
     op_t *ni;
-    /* If the definition has a factory, use it. */
-    if (def->i_create) return def->i_create(def);
 
-    /* Otherwise, simple malloc */
+    /* simple malloc */
     if (NULL == (ni = calloc(1,sizeof(op_t) + (def->i_argc * sizeof(param_t))))) {
         return NULL;
     }
@@ -319,12 +316,30 @@ avmc_resolve_parameter(
             param->p_opcode = avmlib_entity_new(AVM_CLASS_REGISTER,table_index);
             return 0;
         }
+        case PARAM_TYPE_PORT: {
+            uint8_t seg_id = AVMM_SEGMENT_UNLINKED;
+            /* Look in segment first... */
+            t = AVM_CLASS_TABLE(seg,AVM_CLASS_PORT);
+            table_index = avmlib_table_find(t,param->p_text);
+            if (!t || (0 > table_index)) {
+                seg_id = 0;
+                t = AVM_CLASS_TABLE(seg->avm,AVM_CLASS_PORT);
+                table_index = avmlib_table_find(t,param->p_text);
+            }
+                /* Not found? */
+            if (table_index < 0) return -1;
+            param->p_opcode = avmlib_entity_new(AVM_CLASS_PORT,table_index);
+            param->p_opcode |= ((uint32_t)seg_id) << 16;
+            return 0;
+        }
         case PARAM_TYPE_NAME: {
             /* Reference by name.  Do we have it already? */
             table_index = avmlib_table_find(&entity_map,param->p_text);
             if (table_index >= 0) {
+                entity_map_t *em;
                 /* Found it.  Copy from cache */
-                param->p_opcode = (entity_t)(&entity_map)->entries[table_index];
+                em = (entity_map_t *)(&entity_map)->entries[table_index];
+                param->p_opcode = em->entity;
             } else {
                 class_unresolved_t *obj;
             /* Not found?  Create an unresolved reference */
@@ -369,6 +384,9 @@ avmc_resolve_op_parameters(
             return avmc_err_ret("Cannot process parameter \"%s\".\n",
                                 op->i_params[i]->p_text);
         }
+        avm_dbg(3,"AVMC", "Param \"%s\" resolved to: 0x%08x\n",
+               op->i_params[i]->p_text,
+               op->i_params[i]->p_opcode);
     }
     return NULL;
 }
@@ -396,8 +414,8 @@ avmc_compile_def(
 )
 {
     param_t *param;
-    int table_index;
-    int class;
+    int class; /* What class of object are we defining */
+    int class_index = -1; /* Where in the class table should it go? */
 
     if (!op || !seg) {
         return avmc_err_ret("Internal corruption; no active seg or op.");
@@ -438,14 +456,19 @@ avmc_compile_def(
             class_string_t *cs = avmlib_string_new(param->p_text,NULL);
             if (cs != NULL) {
                 /* String table */
-                avmlib_table_add(AVM_CLASS_TABLE(seg,AVM_CLASS_STRING),cs);
-                /* Overall tracking */
-                avmlib_table_add(&entity_map,param->p_text);
+                class_index = avmlib_table_add(AVM_CLASS_TABLE(seg,AVM_CLASS_STRING),cs);
             } else {
                 return avmc_err_ret("Internal error creating string object.\n");
             }
             break;
         }
+    }
+    /* Cache it in the overall entity map */
+    if (class_index >= 0) {
+        entity_map_t *em = calloc(1,sizeof(*em));
+        em->name = strdup(param->p_text);
+        em->entity = avmlib_entity_new(class,class_index);
+        avmlib_table_add(&entity_map,em);
     }
     return NULL;
 }
@@ -506,8 +529,17 @@ avmc_compile_stor(
             /* Good to go. Emit the opcode */
             avmlib_table_add(t_i,param->p_opcode);
             break;
+        case AVM_CLASS_UNRESOLVED:
+            /* Might be ok; we'll let the linker deal with it. */
+            avm_dbg(2,"AVMC","Unresolved storage location \"%s\".  Hopefully the link will take care of it.\n",
+                    param->p_text);
+            avmlib_table_add(t_i,param->p_opcode);
+            break;
+        case AVM_CLASS_PORT:
+            return avmc_err_ret("STOR: Symbol \"%s\" is a PORT entity.  To send output to a PORT, use \"OUT\" instead of \"STOR\".\n",
+                                param->p_text);
         default:
-            return avmc_err_ret("STOR: Symbol \"%s\" is not a valid storage location.\n",op->i_params[0]->p_text);
+            return avmc_err_ret("STOR: Symbol \"%s\" is not a valid storage location.\n",param->p_text);
     }
 
     /* Step 3: Simple encode of the remaining parameters */
@@ -519,4 +551,6 @@ avmc_compile_stor(
     return NULL;
 
 }
+
+
 #endif /* _AVMC_OPS_C_*/
