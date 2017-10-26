@@ -49,7 +49,7 @@ avmlib_getnum(
     if (0 >= (len = strnlen(str,64))) return -1;
 
     /* Skip whitespace */
-    while (isspace(*p++));
+    while (isspace(*p)) p++;
 
     /* Negative? */
     if (*p == '-') {
@@ -97,6 +97,7 @@ avmlib_getnum(
         } 
         retval++; /* Got an(other) good one */
         accum = (accum * radix) + digit;
+        p++;
     }
 
 _avmlib_getnum_out:
