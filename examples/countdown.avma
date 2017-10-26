@@ -13,14 +13,14 @@
 
 ; Get the count as a string value and emit 
 	STOR current,GR0
-	STOR @out, current
+	OUT @stdout, current
 
 ; Test
-	JZ R0,exit   ; Are we at zero yet? (No label definition yet, but that's ok)
+	JZ GR0,exit   ; Are we at zero yet? (No label definition yet, but that's ok)
 
-	SUB R0,1,R0 ; Decrement by subtracting 1.
+	SUB GR0,1,GR0 ; Decrement by subtracting 1.
 	GOTO checkit  ; Loop back	
 
 ; Mark the exit
 	LABEL exit  ;
-	STOR @out,"Exiting, dude.",R0,"Bye"; STOR can take multiple args.
+	OUT @stdout,"Exiting, dude.",GR0,"Bye"; STOR can take multiple args.
