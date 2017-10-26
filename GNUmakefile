@@ -27,6 +27,7 @@ $(info CC is $(CC))
 doc::
 	doxygen doc/avm.doxy	
 
+fresh:: clean all
 
 clean::
 	rm -rf $(CLEANFILES) 2>/dev/null

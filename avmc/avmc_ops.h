@@ -53,6 +53,7 @@ int avmc_opdef_cmp(table_t *this, entry_t entry, intptr_t test);
  */
 char *avmc_compile_def(class_segment_t *seg, op_t *op);
 char *avmc_compile_stor(class_segment_t *seg, op_t *op);
+char *avmc_resolve_op_parameters( class_segment_t *seg, op_t *op);
 
 
 #endif /* _AVMC_OPS_H_ */

@@ -17,6 +17,7 @@
 void avmlib_dump_seg(avm_t *avm, class_segment_t *seg);
 
 /* Entity operations */
+int avmlib_entity_assert_class(entity_t e, int num_checks, ...);
 entity_t avmlib_instruction_new(avm_opcode_t op, uint8_t flags, uint8_t argc);
 entity_t avmlib_entity_new(avm_class_e class, int table_index);
 entity_t avmlib_immediate_new(int64_t val);

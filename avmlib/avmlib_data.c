@@ -9,9 +9,49 @@
 #ifndef _AVMLIB_DATA_C_
 #define _AVMLIB_DATA_C_
 
-#include "avmlib_data.h"
+#include "avmlib.h"
+#include <stdarg.h>
+#include <stdbool.h>
 
 
+/**************************************************************************//**
+ * @brief Determine if an entity is one of a set of classes.
+ *
+ * @details This is a simple comparison between all of the provided classes
+ * and the given entity.
+ *
+ * @param e The entity to test
+ * @param num The number of classes to check
+ * @param ... List of classes.
+ *
+ * @returns false if the entity is not a member of any of the given classes,
+ * true if it is.
+ *
+ * @remarks
+ * */
+int
+avmlib_entity_assert_class(
+    entity_t e,
+    int num,
+    ...
+)
+{
+    va_list vclasses;
+    int i;
+    int c = avmlib_entity_class(e);
+    int retval = false;
+
+    va_start(vclasses,num);
+    for (i=0; i<num;i++) {
+        if (c == va_arg(vclasses,int)) {
+            retval = true;
+            break;
+        }
+    }
+    va_end(vclasses);
+
+    return retval;
+}
 
 /**************************************************************************//**
  * @brief Create a new instruction entity from components.

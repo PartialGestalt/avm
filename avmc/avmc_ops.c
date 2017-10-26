@@ -9,9 +9,6 @@
 #ifndef _AVMC_OPS_C_
 #define _AVMC_OPS_C_
 
-#define AVM_DEBUG
-
-
 #include <stdlib.h>
 #include "avmc_ops.h"
 #include "avmm_data.h"
@@ -40,18 +37,21 @@ opdef_t avmc_op_canon[] = {
         /* Internal compiler bits */
     {"DEF",AVM_OP_DEF,2,avmc_compile_def},
     {"SIZE",AVM_OP_SIZE,3,NULL},
+    {"LABEL",AVM_OP_LABEL,1,avmlib_compile_label},
         /* Structural ops */
     {"NOP",AVM_OP_NOP,0,NULL}, 
     {"STOR",AVM_OP_STOR,2,avmc_compile_stor},
     {"INS",AVM_OP_INS,3,NULL},
-    {"GOTO",AVM_OP_GOTO,1,NULL},
-    {"JZ",AVM_OP_JZ,2,NULL},
-    {"JNZ",AVM_OP_JNZ,2,NULL},
+        /* Jumps */
+    {"GOTO",AVM_OP_GOTO,1,avmlib_compile_jmp},
+    {"JMP",AVM_OP_GOTO,1,avmlib_compile_jmp},
+    {"JZ",AVM_OP_JZ,2,avmlib_compile_jz},
+    {"JNZ",AVM_OP_JNZ,2,avmlib_compile_jnz},
+        /* Processes */
     {"FORK",AVM_OP_FORK,1,NULL},
     {"KILL",AVM_OP_KILL,1,NULL},
     {"PUSH",AVM_OP_PUSH,1,NULL},
     {"POP",AVM_OP_POP,1,NULL},
-    {"LABEL",AVM_OP_LABEL,1,avmlib_compile_label},
 
         /* Arithmetic ops */
     {"ADD",AVM_OP_ADD,3,NULL},
@@ -68,7 +68,7 @@ opdef_t avmc_op_canon[] = {
         /* I/O ops */
     {"FILE",AVM_OP_FILE,2,NULL},
     {"IN",AVM_OP_IN,2,NULL},
-    {"OUT",AVM_OP_OUT,2,NULL},
+    {"OUT",AVM_OP_OUT,2,avmlib_compile_out},
     {NULL} /* Mark end */
 };
 

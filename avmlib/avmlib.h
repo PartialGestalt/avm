@@ -24,6 +24,9 @@
 #define avmlib_err(__format_and_args...) \
     avm_err("AVMLIB", __format_and_args)
 
+/* OP bits from AVMC for common use */
+#include "avmc_ops.h"
+
 
 #endif /* _AVMLIB_H_ */
 

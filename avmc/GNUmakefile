@@ -12,7 +12,7 @@ FLEX_INCLUDES=avmc_bison.h
 FLEX_OTHERS=avmc.output
 
 C_SOURCES=avmc_main.c avmc_ops.c
-CFLAGS+= -g -I../avmm -I../avmlib -I../avmc #--save-temps
+CFLAGS+=-DAVM_DEBUG -g -I../avmm -I../avmlib -I../avmc #--save-temps
 
 SOURCES=$(C_SOURCES) $(FLEX_SOURCES)
 OBJS=$(SOURCES:%.c=%.o)
