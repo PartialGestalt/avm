@@ -10,6 +10,7 @@
 #define _AVMC_OPS_C_
 
 #include <stdlib.h>
+#include <ctype.h>
 #include "avmc_ops.h"
 #include "avmm_data.h"
 #include "avmlib.h"
@@ -36,7 +37,7 @@ opdef_t avmc_op_canon[] = {
     /* TOKEN, OPCODE, minimum ARGC, factory, validator */
         /* Internal compiler bits */
     {"DEF",AVM_OP_DEF,2,avmc_compile_def},
-    {"SIZE",AVM_OP_SIZE,3,NULL},
+    {"SIZE",AVM_OP_SIZE,2,NULL},
     {"LABEL",AVM_OP_LABEL,1,avmlib_compile_label},
         /* Structural ops */
     {"NOP",AVM_OP_NOP,0,NULL}, 
@@ -270,13 +271,15 @@ avmc_resolve_parameter(
     switch(param->p_type) {
         case PARAM_TYPE_STRING: { /* Anonymous string literal */
             class_string_t *obj;
+            char tmpname[40]; 
             /*
              * CLEAN: TODO: Since these are constants, we could
              * theoretically fold multiple references into a single
              * entry.
              */
-            obj = avmlib_string_new(NULL,param->p_text);
             t = AVM_CLASS_TABLE(seg,AVM_CLASS_STRING);
+            sprintf(tmpname,"$s%04x",t->size);
+            obj = avmlib_string_new(tmpname,param->p_text);
             table_index = avmlib_table_add(t,obj);
             param->p_opcode = avmlib_entity_new(AVM_CLASS_STRING,table_index);
             param->p_opcode |= OP_FLAG_CONSTANT;
@@ -448,6 +451,13 @@ avmc_compile_def(
     param = op->i_params[1];
     if (avmlib_table_contains(&entity_map,param->p_text)) {
         return avmc_err_ret("Duplicate symbol \"%s\".\n",param->p_text);
+    }
+
+    /* 
+     * Must start with a letter...
+     */
+    if (!isalpha(*param->p_text)) {
+        return avmc_err_ret("Invalid symbol name \"%s\"; defined symbols must start with a letter.\n",param->p_text);
     }
 
     /* Create new object and store in table */

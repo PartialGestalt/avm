@@ -24,4 +24,4 @@
 
 ; Mark the exit
 	LABEL exit  ;
-	OUT @stdout,"Exiting, dude.",GR0,"Bye"; STOR can take multiple args.
+	OUT @stdout,"Exiting, dude.",GR0,"Bye"; OUT can take multiple args.

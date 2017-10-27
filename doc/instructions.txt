@@ -114,4 +114,6 @@
 0x22     OUT        3      Append/emit a set of bytes to a buffer or port
                            (Args: <where>,<#bytes>, <from>)
 0x23     SIZE       2      Get the size of 1st arg and place in 2nd
-                           (Args: <what>, <where>)
+                           (Args: <what>, <result>).  If a third argument is
+                           provided, use it to SET the size.
+                           (Args: <what>, <result>, <newsize>).

@@ -214,7 +214,7 @@ avmlib_string_new(
     }
 
     /* Save name */
-    strncpy(obj->header.symname, name, sizeof(obj->header.symname));
+    if (name) strncpy(obj->header.symname, name, sizeof(obj->header.symname));
     obj->text = val;
     obj->capacity = strlen(val);
     return obj;
