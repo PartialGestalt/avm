@@ -54,10 +54,11 @@ opdef_t avmc_op_canon[] = {
     {"POP",AVM_OP_POP,1,NULL},
 
         /* Arithmetic ops */
-    {"ADD",AVM_OP_ADD,3,NULL},
-    {"SUB",AVM_OP_SUB,3,NULL},
-    {"INC",AVM_OP_ADD,1,NULL},
-    {"DEC",AVM_OP_SUB,1,NULL},
+    {"ADD",AVM_OP_ADD,3,avmlib_compile_add},
+    {"SUB",AVM_OP_SUB,3,avmlib_compile_sub}
+    ,
+    {"INC",AVM_OP_ADD,1,avmlib_compile_add},
+    {"DEC",AVM_OP_SUB,1,avmlib_compile_sub},
     {"MUL",AVM_OP_MUL,3,NULL},
     {"DIV",AVM_OP_DIV,3,NULL},
     {"POW",AVM_OP_POW,3,NULL},
