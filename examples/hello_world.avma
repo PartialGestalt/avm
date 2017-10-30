@@ -10,4 +10,4 @@
 
 ; Third, use the I/O command with length (string defined already)
 	SIZE hello R0
-	OUT @stdout,R0,hello
+	OUT @stdout,hello,R0

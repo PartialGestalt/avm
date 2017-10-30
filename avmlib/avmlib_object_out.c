@@ -66,10 +66,18 @@ avmlib_compile_out(
         return avmc_err_ret("OUT: Target \"%s\" is not a PORT object.\n",param->p_text);
     }
 
+    /*
+     * If we have 3 args, the final one (size) must be a numeric.
+     */
     if (op->i_paramc > 2) {
         param = op->i_params[2];
-        if (avmlib_entity_assert_class(param->p_opcode,3,
-                                       AVM_CLASS_)
+        if (!avmlib_entity_assert_class(param->p_opcode,4,
+                                        AVM_CLASS_NUMBER,
+                                        AVM_CLASS_IMMEDIATE,
+                                        AVM_CLASS_REGISTER,
+                                        AVM_CLASS_UNRESOLVED)) {
+            return avmc_err_ret("OUT: Size reference \"%s\" is not a numeric object.\n",param->p_text);
+        }
     }
 
     /* Emit basic op */

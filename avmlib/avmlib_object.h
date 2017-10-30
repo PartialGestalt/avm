@@ -16,6 +16,9 @@
 char *avmlib_compile_label(class_segment_t *seg, op_t *op);
 class_label_t *avmlib_new_label(char *name, uint8_t target_segment, uint32_t location);
 
+/* META */
+char *avmlib_compile_size(class_segment_t *seg, op_t *op);
+
 /* OUT */
 char *avmlib_compile_out(class_segment_t *seg, op_t *op);
 

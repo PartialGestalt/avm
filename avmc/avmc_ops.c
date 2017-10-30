@@ -37,7 +37,7 @@ opdef_t avmc_op_canon[] = {
     /* TOKEN, OPCODE, minimum ARGC, factory, validator */
         /* Internal compiler bits */
     {"DEF",AVM_OP_DEF,2,avmc_compile_def},
-    {"SIZE",AVM_OP_SIZE,2,NULL},
+    {"SIZE",AVM_OP_SIZE,2,avmlib_compile_size},
     {"LABEL",AVM_OP_LABEL,1,avmlib_compile_label},
         /* Structural ops */
     {"NOP",AVM_OP_NOP,0,NULL}, 
