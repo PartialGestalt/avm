@@ -13,7 +13,10 @@
                 "path": [
                     "/usr/include",
                     "/usr/local/include",
-                    "${workspaceRoot}"
+                    "${workspaceRoot}",
+                    "${workspaceRoot}/avmc",
+                    "${workspaceRoot}/avmlib",
+                    "${workspaceRoot}/avmm"
                 ],
                 "limitSymbolsToIncludedHeaders": true,
                 "databaseFilename": ""

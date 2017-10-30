@@ -44,7 +44,7 @@ static class_segment_t cur_seg;
 /* The reference machine for predefined values */
 static avm_t *avm;
 
-/* All named values. */
+/* All named values in this run. */
 table_t entity_map;
 
 /**

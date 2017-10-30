@@ -22,7 +22,8 @@
  *
  * @returns NULL on success, error string on failure.
  *
- * @remarks 
+ * @remarks Requires 2 arguments (PORT and Source object), and allows a third
+ * (number of bytes)
  * */
 char *
 avmlib_compile_out(
@@ -40,10 +41,14 @@ avmlib_compile_out(
     }
 
     /*
-     * Must have at least 2 parameters, port and value (may have more)
+     * Must have at least 2 parameters, port and value (may have size)
      */
     if (op->i_paramc < 2) {
         return avmc_err_ret("Syntax: OUT requires at least a port and a value.\n");
+    }
+
+    if (op->i_paramc > 3) {
+        return avmc_err_ret("Syntax: OUT cannot take more than 3 parameters.");
     }
 
     /* 
@@ -59,6 +64,12 @@ avmlib_compile_out(
     if ((avmlib_entity_class(param->p_opcode) != AVM_CLASS_PORT) &&
         (avmlib_entity_class(param->p_opcode) != AVM_CLASS_UNRESOLVED)) {
         return avmc_err_ret("OUT: Target \"%s\" is not a PORT object.\n",param->p_text);
+    }
+
+    if (op->i_paramc > 2) {
+        param = op->i_params[2];
+        if (avmlib_entity_assert_class(param->p_opcode,3,
+                                       AVM_CLASS_)
     }
 
     /* Emit basic op */

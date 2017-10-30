@@ -109,10 +109,12 @@
 #-----------------------------------------------
 0x20     FILE       2      Open a file as a buffer or port
                            (Args: <target>,<filename>)
-0x21     IN         3      Consume the next set of bytes from a buffer or port
-                           (Args: <where>,<#bytes>, <into>)
-0x22     OUT        3      Append/emit a set of bytes to a buffer or port
-                           (Args: <where>,<#bytes>, <from>)
+0x21     IN         2      Consume the next set of bytes from a buffer or port
+                           (Args: <where>,<into>[,<#bytes>])
+                           If not present, <#bytes> will be the size of <into>
+0x22     OUT        2      Append/emit a set of bytes to a buffer or port
+                           (Args: <where>,<from>[,<#bytes>])
+                           If not present, <#bytes> will be the size of <from>
 0x23     SIZE       2      Get the size of 1st arg and place in 2nd
                            (Args: <what>, <result>).  If a third argument is
                            provided, use it to SET the size.
