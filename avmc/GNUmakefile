@@ -45,4 +45,4 @@ $(PROG): $(OBJS)
 
 
 test: all
-	./avmc ../examples/*.avma
+	for eg in ../examples/*.avma; do ./avmc $${eg}; done

@@ -30,7 +30,6 @@ class_register_t *avmlib_register_new(char *name,
                                       uint32_t (*get)(class_register_t *),
                                       uint32_t (*set)(class_register_t *,uint32_t value));
 
-class_string_t *avmlib_string_new(char *name, char *value);
 class_number_t *avmlib_number_new(char *name, int width, int64_t value);
 class_unresolved_t *avmlib_unresolved_new(char *name);
 

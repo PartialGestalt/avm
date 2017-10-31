@@ -1,0 +1,15 @@
+Program generation.
+-------------------
+
+Unlike C-style compilation, multi-stage operation is
+required.
+
+To compile, run avmc with one or more source files (*.avma); this will
+  generate a single program segment (*.avmo).  All source files specified on
+  the command line will be merged into a single segment, as if they were all
+  in a single source file.
+
+To link, run avmc with one or more program segments and hardware 
+  definitions; this will generate a single machine (*.avmm)
+
+

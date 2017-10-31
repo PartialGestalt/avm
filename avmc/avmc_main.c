@@ -49,16 +49,22 @@ table_t entity_map;
 
 /**
  * Command line options.
- * The only non-option argument we support is the input file.
+ * The only non-option argument we support is the input files.
  */
 static struct option opts[] = {
-        /* "name" is the segment (program) name.  Default is the basename 
-         * of the input .avma file.
+        /* "output" is the name of the output file; if not specified, 
+         * it is the basename of the first input file.
          */
-    { "name", 1, NULL, 'n' },
+    { "output", 1, NULL, 'o' },
         /* "entrypoint" is the label to which the machine should branch on
-         * program load.  If no entrypoint is specified, execution begins
-         * at offset zero in the program stream.
+         * segment load.  The default is "main".
+         * If compiling, this defines the segment load label; the default
+         * is "main" if found.  Otherwise no load label is defined for 
+         * that segment.
+         * If linking, the default entrypoint is the entrypoint of the
+         * first segment in the link list to have a defined entrypoint.
+         * If specified here, however, it can override the default behavior
+         * and will select the label in the linked segments.
          */
     { "entrypoint", 1, NULL, 'e' },
     { NULL },

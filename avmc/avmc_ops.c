@@ -279,7 +279,7 @@ avmc_resolve_parameter(
              */
             t = AVM_CLASS_TABLE(seg,AVM_CLASS_STRING);
             sprintf(tmpname,"$s%04x",t->size);
-            obj = avmlib_string_new(tmpname,param->p_text);
+            obj = avmtype_string_new(tmpname,param->p_text);
             table_index = avmlib_table_add(t,obj);
             param->p_opcode = avmlib_entity_new(AVM_CLASS_STRING,table_index);
             param->p_opcode |= OP_FLAG_CONSTANT;
@@ -464,7 +464,7 @@ avmc_compile_def(
     switch (class) {
         default: return avmc_err_ret("Semantics: can't define a reference in that class (\"%s\").\n", op->i_params[0]->p_text);
         case AVM_CLASS_STRING:{
-            class_string_t *cs = avmlib_string_new(param->p_text,NULL);
+            class_string_t *cs = avmtype_string_new(param->p_text,NULL);
             if (cs != NULL) {
                 /* String table */
                 class_index = avmlib_table_add(AVM_CLASS_TABLE(seg,AVM_CLASS_STRING),cs);

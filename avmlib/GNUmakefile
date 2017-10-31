@@ -9,7 +9,7 @@ endif
 
 LIB_TOKEN=avm
 LIB_TARGET=lib$(LIB_TOKEN).a
-LIB_SRCS=$(wildcard avmlib_*.c)
+LIB_SRCS=$(wildcard avmlib_*.c) $(wildcard avmtype_*.c)
 LIB_OBJS=$(LIB_SRCS:.c=.o)
 
 LIB_CFLAGS=-DAVM_DEBUG -fPIC -I../avmm -I../avmlib -I../avmc

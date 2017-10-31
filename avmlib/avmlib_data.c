@@ -188,39 +188,6 @@ avmlib_register_new(
 }
 
 /**************************************************************************//**
- * @brief Create a string object from parameters
- *
- * @details
- *
- * @param
- *
- * @returns New string object on success, NULL on failure.
- *
- * @remarks
- * */
-class_string_t *
-avmlib_string_new(
-    char *name,
-    char *value
-)
-{
-    /* Base declaration/alloc */
-    class_string_t *obj = calloc(1,sizeof(*obj));
-    char *val = strdup(value!=NULL?value:"");
-    if ((NULL == obj) || (NULL == val)) {
-        if (NULL != obj) free(obj);
-        if (NULL != val) free(val);
-        return NULL;
-    }
-
-    /* Save name */
-    if (name) strncpy(obj->header.symname, name, sizeof(obj->header.symname));
-    obj->text = val;
-    obj->capacity = strlen(val);
-    return obj;
-}
-
-/**************************************************************************//**
  * @brief Create a numeric object from parameters
  *
  * @details
